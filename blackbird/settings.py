@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'b1tq(_ysm8)opd2)$9rqsee2$9-j*w8al=83tgf1ycz7*+rlo3'
+SECRET_KEY = '4-rcjw!ex+vkh2t#etm1y!vbza)&!p*9b8p43wnzg(sn8s-965'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    #This is for the app I've created.
+    'eggs.apps.EggsConfig'
 ]
 
 MIDDLEWARE = [
@@ -75,8 +77,12 @@ WSGI_APPLICATION = 'blackbird.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'cardinal',
+        'USER': 'gamel',
+        'PASSWORD': '58mys9t!',
+        'HOST': '',
+        'PORT': '5433',
     }
 }
 
@@ -105,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Chicago'
 
 USE_I18N = True
 
@@ -117,4 +123,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+STATIC_URL = '/static/'
+#location on particular machine
+windowsLocation = "/Users/gamel/Documents/LanzaProject/" 
+
+#This is where uploaded files will be stored. 
+MEDIA_ROOT = windowsLocation+"blackbird/aviary/"
+
+# URL for static files.
 STATIC_URL = '/static/'
