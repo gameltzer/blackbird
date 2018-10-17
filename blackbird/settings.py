@@ -125,10 +125,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 #location on particular machine
-windowsLocation = "/Users/gamel/Documents/LanzaProject/" 
+linuxLocation = "/mnt/LinuxLanzaProject/" 
 
 #This is where uploaded files will be stored. 
-MEDIA_ROOT = windowsLocation+"blackbird/aviary/"
+MEDIA_ROOT = linuxLocation+"blackbird/aviary/"
 
 # URL for static files.
 STATIC_URL = '/static/'

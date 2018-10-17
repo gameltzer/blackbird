@@ -9,12 +9,13 @@ from django.core.files import File
 
 class Reference(models.Model):
 # This is our primary key which auto-increments
-
+    
     referenceID = models.AutoField(primary_key=True)
     referenceFile = models.FileField(upload_to="reference/")  
     def __str__(self):
         return self.referenceFile.name
-
+    #This is so VSC doesn't complain. 
+    objects = models.Manager()
 
 
 #This is for each sample
@@ -26,7 +27,10 @@ class Sample(models.Model):
     batch = models.CharField( max_length=100)
     sampleFile = models.FileField(upload_to="sample") 
     def __str__(self):
-        return self.sampleFile.name 
+        return self.sampleFile.name
+     #This is so VSC doesn't complain. 
+    objects = models.Manager()
+    
     
 
 

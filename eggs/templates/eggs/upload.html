@@ -5,8 +5,7 @@
     <form enctype="multipart/form-data" action="upload" method="post">
         {% csrf_token %}
         {{ reference_form.as_p }}
-        {{ sample_form.as_p }}
-        {{ sample_form.as_p }}
+        
         {% comment %} Enter sample 1:<input type="file" id="sample1" accept=".fastq"><br><br> 
         Enter sample 2:<input type="file" id="sample2" accept=".fastq"><br><br>  {% endcomment %}
         {% comment %} Select a reference file:<input type="file" name="dataReference" id="reference"  accept=".fasta, .fastq"><br><br> {% endcomment %}
