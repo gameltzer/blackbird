@@ -1,6 +1,10 @@
 
 
 <h1>Upload Sample files</h1>
+<p> The batch is {{nameOfBatch}}, and that means these samples 
+are associated with {{associatedReference}}.
+If you wish to change this, go <a href="{% url 'upload' %}">here</a>.
+If you visit the link, samples selected will not be saved.</p>
    <div>
     <form enctype="multipart/form-data" action="uploadSample" method="post">
         {% csrf_token %}
@@ -20,6 +24,8 @@
         <input type="submit" value="Upload sample files"  /><br><br>
     </form>
 </div>
+
+
 {% comment %} <div>
 <h2>Enter batch name</h2>
 <button id="batch">Provide batch name</button>

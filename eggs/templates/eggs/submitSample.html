@@ -2,19 +2,17 @@
 
 <h1> Select set of files for processing</h1>
    <div>
-    <form enctype="multipart/form-data" action="submit" method="post">
+   <form enctype="multipart/form-data" action="submit" method="post">
         {% csrf_token %}>
-        {{ processForm.as_p }}
-       
+        <p>The batch is {{batch}}.</p>
+        <p>The reference file is {{reference}}. </p>
+        <p>The sample files are
+         {{sample1}} and {{sample2}}/</p>
+
         <input type="submit" value="Submit files for processing"  /><br><br>
     </form>
 </div>
-<p>
-{{choiceSamples}}
-</p>
-<p>
-{{choiceReference}}
-</p>
+
 <a href="{% url 'index' %}">Home</a>
 
 

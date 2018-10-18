@@ -1,0 +1,14 @@
+
+
+<h1>Upload files</h1>
+   <div>
+</div>
+    <form enctype="multipart/form-data" action="batchCreate" method="post">
+        {% csrf_token %}
+        {{ batch_form.as_p }}
+        <input type="submit" value="Create Batch"  /><br><br>
+    </form>
+
+
+<a href="{% url 'index' %}">Home</a>
+
