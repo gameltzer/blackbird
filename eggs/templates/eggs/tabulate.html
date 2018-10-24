@@ -1,1 +1,6 @@
-<p>we need to extract the stuff we want from the vcf</p>
+<h1>Tabulate data from the vcf file {{resultFileName}} </h1>
+
+<form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <input type="submit" value="tabulate {{resultFileName}}"  /><br><br>
+</form>

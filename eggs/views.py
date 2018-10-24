@@ -5,9 +5,10 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from .forms import *
 from django.forms import modelformset_factory
-from eggs.models import Sample, Reference, Batch
+from eggs.models import Sample, Reference, Batch,Result
 from subprocess import call
 import os 
+from eggs.retrieveVcfData import *
 
 # Create your views here.
 
@@ -115,7 +116,29 @@ def submit(request):
     return render(request,'eggs/submitSample.html', context)
 
 def tabulate(request):
-    return render(request,'eggs/tabulate.html')
+    if request.method =='POST':
+        result = Result.objects.latest("timeCreated")
+        resultFileName = "final" + str(result.batch)+".vcf"
+        wd = os.getcwd()
+        # goes to the right directory
+        os.chdir("aviary")
+        #this function stores the vcfresults in the VCFRow Model
+        storeVcf(resultFileName)
+        # returns to previous directory
+        os.chdir(wd)
+        extractFromFormat()
+        calculateVariants()
+        exportToJson()
+        return HttpResponseRedirect('graph')
+    else:
+        batch = Batch.objects.latest("timeCreated")
+        result = Result(batch=batch)
+        result.save()
+        resultFileName = "final" + str(result.batch)+".vcf"
+        context ={
+        "resultFileName": resultFileName,
+        }
+    return render(request,'eggs/tabulate.html',context)
 
 def graph(request):
     return HttpResponse("This is the page for the graph")

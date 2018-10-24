@@ -130,5 +130,4 @@ linuxLocation = "/mnt/LinuxLanzaProject/"
 #This is where uploaded files will be stored. 
 MEDIA_ROOT = linuxLocation+"blackbird/aviary/"
 
-# URL for static files.
-STATIC_URL = '/static/'
+
