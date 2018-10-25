@@ -126,8 +126,8 @@ def tabulate(request):
         storeVcf(resultFileName)
         # returns to previous directory
         os.chdir(wd)
-        extractFromFormat()
-        calculateVariants()
+        extractFromFormat(result)
+        calculateVariants(result)
         exportToJson()
         return HttpResponseRedirect('graph')
     else:
@@ -141,4 +141,4 @@ def tabulate(request):
     return render(request,'eggs/tabulate.html',context)
 
 def graph(request):
-    return HttpResponse("This is the page for the graph")
+    return render(request, 'eggs/graph.html')

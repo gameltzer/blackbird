@@ -62,9 +62,7 @@ class Result(models.Model):
 class VCFRow(models.Model):
     #this is just in case we want to store the contents
     # of more than one VCF file here.
-    # 1!!!!!!! LaTERresult = models.ForeignKey(Result, on_delete=models.CASCADE)
-    
-
+    result = models.ForeignKey(Result, on_delete=models.CASCADE, null=True)    
     rowid = models.AutoField(primary_key=True)
     chrom = models.CharField(max_length=100, null=True)
     pos = models.CharField(max_length=100, null=True)

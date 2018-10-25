@@ -1,8 +1,10 @@
 import psycopg2 
 from subprocess import call
-from eggs.models import VCFRow
+from eggs.models import VCFRow, Result
 from django.db.models import F
 import os
+from django.core import serializers
+
 
 
 def storeVcf(vcfFileName):
@@ -33,28 +35,11 @@ def storeVcf(vcfFileName):
 
 #this if for only one vcfFile stored in vcfRow  
 # It puts the ad and DP information into separate columns  
-def extractFromFormat():
-    # conn = psycopg2.connect("""dbname=cardinal 
-    # user=gamel port=5433""")
-    # cur = conn.cursor()
-    # listOfRows = []
-    # this makes all the format fields available as a dictionary
+def extractFromFormat(result):
+    
     for row in VCFRow.objects.iterator():
-        
-        # nameList = row.formatNameColInFile.split(':')
-        # valueList = row.formatValueColInFile.split(':')
-        # formatDict = dict(zip(nameList, valueList))
-        # this gets the FORNMAT (filtered) read depth
-        # totalDepth = formatDict['DP']
-        # row.formatDP = int(totalDepth)
-        # we need to separate the AD string into the re
-        # relevant parts
-        # adString = formatDict['AD']
-        # adList = adString.split(',')
-     
-        # row.formatRefAlleleReads = int(adList[0])
-        # row.formatAltAlleleReads = int(adList[1])
-        # this gets the unfiltered DP ( we want unfiltered just like the AD)
+        row.result = result
+           # this gets the unfiltered DP ( we want unfiltered just like the AD)
         info = row.info.split(";")
         for i in range(len( info)):
             infoList = info[i].split("=")
@@ -69,11 +54,7 @@ def extractFromFormat():
                 infoValue.append(".")
             else:
                 infoValue.append(infoElement[1])
-	        # infoKey.append(infoElement[0])
-            # if (length == 1):
-            #     infoValue.append(None)
-            # else: 
-	        #     infoValue.append(infoElement[1])
+	
         infoDict = dict(zip(infoKey,infoValue))
         row.infoDP = infoDict['DP']
         infoADString = infoDict['AD']
@@ -82,21 +63,22 @@ def extractFromFormat():
         row.infoRefAlleleReads = int(infoAD[0])
         row.infoAltAlleleReads = int(infoAD[1])
         row.save()
-# row.save()
-        #Get columns from formatDict
-        # listOfRows.append({ thisRowId: formatDict
-        # })
-       
-    # hopefully this will do a bulk save
-    # # the bulk of the function is here. 
-    # cur.close()
-    # conn.close()
 
-def calculateVariants():
-    
-    return VCFRow.objects.filter(infoAltAlleleReads__gt=F('infoDP') * .50).count()
+#this calculates how many variants
+def calculateVariants(thisResult):
+    resultRows=VCFRow.objects.filter(result=thisResult)
+    thisResult.significantVariantCount = resultRows.filter(infoAltAlleleReads__gt=F('infoDP') * .50).count()
+    thisResult.totalCount = resultRows.all().count()
+    thisResult.save()
 
-
+# this saves all our results in a json file so that javascript can use it to make the graph
 def exportToJson():
-    significantVariantCount = calculateVariants
-    totalCount = VCFRow.objects.filter.all().count()
+    JSONSerializer = serializers.get_serializer("json")
+    json_serializer = JSONSerializer()
+    with open("eggs/static/eggs/resultJson.json", "w") as out:
+        json_serializer.serialize(Result.objects.all(), stream=out)
+
+# this just empties the results and VCFRow tables so that we can continue developing
+def cleanForDev():
+    Result.objects.all().delete()
+    VCFRow.objects.all().delete()
