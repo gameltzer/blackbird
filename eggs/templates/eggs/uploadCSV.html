@@ -1,0 +1,15 @@
+<h1>Upload CSV File </h1>
+</br>
+</br>
+<form enctype="multipart/form-data" method="post" action="uploadCSV">
+    {% csrf_token %}
+    {{form.as_p}}</br>
+    {{Filename}}</br>
+    </br></br>
+    <input type="submit" value="Process file"/>
+</form>
+</br>
+</br>
+
+
+<a href="{% url 'index' %}">Home</a>

@@ -17,8 +17,17 @@ class Reference(models.Model):
     #This is so VSC doesn't complain. 
     objects = models.Manager()
 
+# for each CSV submission
+class CSV(models.Model):
+    csvFile = models.FileField(upload_to="csv/", null = True, verbose_name="Select a CSV File.")
+    timeCreated = models.DateTimeField(auto_now_add=True)
+    objects = models.Manager()
+
 # This is for each batch
 class Batch(models.Model):
+    # field should be null to allow for non-csv option
+    csvID = models.ForeignKey(CSV, on_delete=models.CASCADE, null=True)
+
 
     reference = models.ForeignKey(Reference, on_delete=models.CASCADE)
     #We want the batchName to be unique.

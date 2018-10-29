@@ -1,5 +1,27 @@
-{#This is a crude mockup of how we might want to naviagte to the different elements #}
-<ul>
-<li><a href="{% url 'upload' %}">Upload samples and references.</a></li>
-<li><a href="{% url 'graph'%}">View graph</a></li>
-</ul>
+{% load static %}
+
+
+<h1>Choose how to upload files.</h1>
+
+    <div class="determineInputType">
+        <form action="">
+            <input  type="radio" name="inputKind" value="fast" id="fastButton">Upload FASTA and FASTQ</br>
+            <input  type="radio" name="inputKind" value="csv" id="csvButton">Upload a CSV</br>
+            </br>
+
+        </form>
+    </div>
+    <div class="formSelectInput">
+        <form method="GET" action="{% url 'uploadSelectFasta' %}">
+            <input type="submit" value="Select individual FASTA and FASTQ files">
+        </form>
+    </div>
+    <div class="csvInput">
+        <form method="GET" action="{% url 'uploadCSV' %}">
+         <input type="submit" value="Select CSV file">
+    </div>
+  
+</br>
+
+<script src="{% static "eggs/chooseUpload.js" %}" ></script>
+

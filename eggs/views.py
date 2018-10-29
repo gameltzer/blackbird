@@ -3,12 +3,15 @@ from __future__ import unicode_literals
 
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from .forms import *
+from .forms import UploadReferenceForm, UploadSampleForm, BatchForm, CSVForm
 from django.forms import modelformset_factory
-from eggs.models import Sample, Reference, Batch,Result
+from eggs.models import Sample, Reference, Batch,Result, CSV
 from subprocess import call
 import os 
 from eggs.retrieveVcfData import *
+from django.views import View
+
+from django.core.files.uploadhandler import TemporaryFileUploadHandler
 
 # Create your views here.
 
@@ -17,10 +20,14 @@ from django.http import HttpResponse
 def index(request):
     return render(request, 'eggs/index.html')
 
-def upload(request):
+# def chooseUpload(request):
+#     return render(request, 'eggs/chooseUpload.html')
+
+def uploadSelectFasta(request):
     if request.method == 'POST':
         reference_form = UploadReferenceForm(request.POST, request.FILES)
         if (reference_form.is_valid()):
+            print(request.FILES)
             reference_form.save()
             return HttpResponseRedirect('batchCreate')
         else:
@@ -32,14 +39,17 @@ def upload(request):
             'reference_form' : UploadReferenceForm()
         }   
 #    return render(request,'eggs/upload.html', context)
-    return render(request,'eggs/upload.html', context)
+    return render(request,'eggs/uploadSelectFasta.html', context)
+
+def uploadCSV(request):
+    return render(request, 'eggs/uploadCSV.html')
 
 def batchCreate(request):
     if request.method == 'POST':
         batch_form = BatchForm(request.POST, request.FILES)
         if (batch_form.is_valid()):
             batch_form.save()
-            return HttpResponseRedirect('upload/uploadSample')
+            return HttpResponseRedirect('uploadSelectFasta/uploadSample')
         else: 
             context = {
                 'batch_form': batch_form
@@ -142,3 +152,176 @@ def tabulate(request):
 
 def graph(request):
     return render(request, 'eggs/graph.html')
+
+# This is the view for uploading a CSV. A class-based approach is used because
+# it is much more complicated. 
+class CSVView(View):
+    form_class = CSVForm
+    template_name = 'eggs/uploadCSV.html'
+    def success(self, request, template, filename):
+        return HttpResponseRedirect('submitCSV')
+  
+    # this returns  a tuple with the id representing the CSV model object 
+    # and the CSV lIST
+    def handleUploadedFile(self, f):
+        
+        csvList =[]
+        fileIter = iter(f)
+        header = fileIter.next().rstrip().split(",")
+        # the header should already be validated and cleaned
+        # so that we know we have the result we want.  
+        for line in fileIter:
+            line = line.rstrip()
+            #This creates a dictionary for each line, and then
+            # puts it into a meat dictionary.
+            lineCol= line.split(",")
+            lineDict = {
+                header[0]:lineCol[0],
+                header[1]:lineCol[1],
+                header[2]:lineCol[2],
+            }
+            csvList.append(lineDict)
+        # for line in f:
+        #     lineCols = line.split(",")
+        c = CSV.objects.get(csvFile=f.name)
+       
+        # print (c.csvFile)
+
+        csvTup=(c.csvFile, csvList)
+        return csvTup
+    
+    # takes as an input a list represnting the contents of the CSV file and returns a 
+    # data strucure with the different Reference objects (after creating the reference objects)
+    # def getReferenceFiles(self, csvList):
+    #     refList = []
+    #     for row in csvList:
+    #          ref = Reference(referenceFile=row['ReferenceFile'])
+    #          ref.save()
+    #          refList.append(ref)
+    #     return refList
+
+    # takes as input a list repythopresenting the contents of the csv file and the CSV entry
+    def getDataFromCSV(self, csvTup):
+        cName = csvTup[0]
+        csvList = csvTup[1]
+        # the earliest will be the one with all the references.
+
+        csvObj = CSV.objects.filter(csvFile=cName).earliest("timeCreated")
+        refList = []
+        batchList = []
+        
+        for row in csvList:
+            thisReference = row['ReferenceFile']
+          #  fileObj = open(thisReference, "r")
+           # fileDict = {thisReference: fileObj}
+            
+             #If we already have a file with tat name, we do not save.
+            if not Reference.objects.filter(referenceFile=thisReference).exists():
+                ref = Reference(referenceFile=thisReference)
+                ref.save()
+                refList.append(ref)
+            thisBatchName = row['SampleName']
+            if not Batch.objects.filter(batchName=thisBatchName).exists():
+                thisReferenceObject = Reference.objects.get(referenceFile=thisReference)
+                batch = Batch(csvID=csvObj, batchName=thisBatchName, reference=thisReferenceObject)
+                batch.save()
+                batchList.append(batch)
+            # avoid redundant samples
+            s = Sample(sampleFile=row['FastQFilename'],batch=Batch.objects.get(batchName=thisBatchName))
+            s.save()
+            # this might need to be cleaned up. 
+        return csvObj
+
+    def sendToPipeline(self, batchGroup):
+        for batch in batchGroup:
+            valueIter = batch.itervalues()
+            keyIter = batch.iterkeys()
+            valueList = valueIter.next()
+            reference =str(Reference.objects.get(pk=valueList[0]).referenceFile.name)
+            sample1 = str(valueList[1])
+            sample2 = str(valueList[2])
+            basename = str(keyIter.next())
+            # This changes the directory to the one with the shell script (in the "aviary" media directory)        
+            wd = os.getcwd()
+            os.chdir("aviary")
+    #This is the pipeline we use! 
+            pipelineName="./nest.sh"
+            call([pipelineName, sample1, sample2, reference, basename])
+            os.chdir(wd)
+
+    # this asks the user for a CSV file according to the CSVForm class. 
+    def get(self,request):
+        form = self.form_class()
+        return render(request, self.template_name, {"form": form} )
+    def post(self,request):
+        form = self.form_class(request.POST, request.FILES)
+        
+        if form.is_valid():
+            print(request.FILES) 
+## try this!            
+            form.save()
+            csvFile = form.instance.csvFile
+            print(csvFile)
+
+            # csvPath = form.fields["csvFile"]
+            # csvFile = request.FILES['csvFile']
+            # print("path" + csvPath.name)
+            # print("file:" + str(type(csvFile)))
+            # print("path:" + csvFile.temporary_file_path())
+
+            csvList = self.handleUploadedFile(csvFile)
+          
+            # refList = self.getReferenceFiles(c(svList)
+            csvStore = self.getDataFromCSV(csvList)
+            # print(form['csvFileName'].data)
+            batches = csvStore.batch_set.all()
+            # print(batches)
+            csvBatchDictList = []
+            for batch in batches:
+                # print(batch)
+                samples = batch.sample_set.all()
+                # print(samples.count())
+                sampleList = []
+                for sample in samples:
+                    # print(sample)
+                    sampleList.append(sample)
+                batchDict ={batch.batchName: [ batch.reference_id, samples[0], samples[1]] }
+                csvBatchDictList.append(batchDict)
+            print(csvBatchDictList)
+            self.sendToPipeline(csvBatchDictList)
+            print("done")
+            return  render (request, self.template_name, {"Files": "done"})
+        return render(request, self.template_name, {"form":form})
+
+# class SubmitCSV(View):
+#     def get(self,request):
+#     def post(self,request):
+#     #this doesn't handle csv files. 
+#     # also consider creating 
+#     #
+#     # The arguments for the shell script
+#     batch=Batch.objects.latest("timeCreated")
+#     reference=batch.reference
+#     samples = []
+#     # this gets the associated samples
+#     for sample in batch.sample_set.all():
+#         samples.append(sample)
+#     sample1 = samples[0]
+#     sample2 = samples[1]
+#     context = {
+#             "batch" : batch,
+#             "reference" : reference,
+#             "sample1" : sample1,
+#             "sample2" : sample2,
+#         }
+#     if request.method =='POST':
+#             #The batch we are working with. 
+#     # This changes the directory to the one with the shell script (in the "aviary" media directory)        
+#             wd = os.getcwd()
+#             os.chdir("aviary")
+#     #This is the pipeline we use! 
+#             pipelineName="./nest.sh"
+#             call([pipelineName, sample1.sampleFile.name, sample2.sampleFile.name, reference.referenceFile.name, batch.batchName])
+#             os.chdir(wd)
+#             return HttpResponseRedirect('tabulate')
+#     return render(request, "eggs/submitCSV.html")

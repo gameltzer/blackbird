@@ -1,0 +1,10 @@
+<h1>Send csv files to  pipeline</h1>
+
+<div>
+   <form enctype="multipart/form-data" action="SubmitCSV" method="post">
+        {% csrf_token %}>
+        <input type="submit" value="Generate VCFfiles (this may take a while)!"  /><br><br>
+    </form>
+</div>
+
+<a href="{% url 'index' %}">Home</

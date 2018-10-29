@@ -130,4 +130,6 @@ linuxLocation = "/mnt/LinuxLanzaProject/"
 #This is where uploaded files will be stored. 
 MEDIA_ROOT = linuxLocation+"blackbird/aviary/"
 
+# FILE_UPLOAD_MAX_MEMORY_SIZE = 2
+
 

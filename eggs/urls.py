@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 
-from . import views
+from eggs import views
 # this is for the static files
 
 # from django.conf import settings
@@ -9,9 +9,11 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^upload$',views.upload, name ='upload'),
-    url(r'^upload/uploadSample$',views.uploadSample, name ='uploadSample'),
+    url(r'^uploadCSV',views.CSVView.as_view(), name = 'uploadCSV'),
+    url(r'^uploadSelectFasta$',views.uploadSelectFasta, name ='uploadSelectFasta'),
+    url(r'^uploadSelectFasta/uploadSample$',views.uploadSample, name ='uploadSample'),
     url(r'^submit$',views.submit, name ='submit'),
+    # url(r'^submitCSV$', views.SubmitCSV.as_view(), name= 'SubmitCSV'),
     url(r'^graph$',views.graph, name='graph'),
     url(r'^tabulate$',views.tabulate, name='tabulate'),
     url(r'^batchCreate$',views.batchCreate, name='batchCreate'),
