@@ -11,21 +11,25 @@ request.send();
 request.onload = function() {
     var results = request.response;
     makeChart(results);
-}
+};
 
 // # this is just a test
 function makeChart(jsonObj){
+    var jsonGroup = [];
+    var jsonData = [];
+    for(var i = 0; i < jsonObj.length; i++){
+        jsonGroup[i] = jsonObj[i].fields.batch;
+        jsonData[i] = jsonObj[i].fields.significantVariantCount;
+    }
 
     canvas = makeCanvas(); 
     var myChart = new Chart(canvas,{
         type: 'bar',
         data: {
-            labels: [jsonObj[0].fields.batch],
+            labels: jsonGroup,
             datasets: [{
                 label: '# of mutations',
-                data: [jsonObj[0].fields.significantVariantCount],
-                backgroundColor: ['rgba(54, 162, 235, 0.2)'],
-                borderColor: ['rgba(54, 162, 235, 1)'],
+                data: jsonData,
                 borderWidth: 1
             }]
         },

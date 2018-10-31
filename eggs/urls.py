@@ -16,5 +16,6 @@ urlpatterns = [
     # url(r'^submitCSV$', views.SubmitCSV.as_view(), name= 'SubmitCSV'),
     url(r'^graph$',views.graph, name='graph'),
     url(r'^tabulate$',views.tabulate, name='tabulate'),
+    url(r'^graphCSV$',views.graphCSV, name='graphCSV'),
     url(r'^batchCreate$',views.batchCreate, name='batchCreate'),
 ] #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

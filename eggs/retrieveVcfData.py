@@ -1,6 +1,6 @@
 import psycopg2 
 from subprocess import call
-from eggs.models import VCFRow, Result
+from eggs.models import VCFRow, Result, CSV
 from django.db.models import F
 import os
 from django.core import serializers
@@ -36,10 +36,11 @@ def storeVcf(vcfFileName):
 #this if for only one vcfFile stored in vcfRow  
 # It puts the ad and DP information into separate columns  
 def extractFromFormat(result):
-    
-    for row in VCFRow.objects.iterator():
+    VCFWithoutResult = VCFRow.objects.filter(result__isnull=True)
+    for row in VCFWithoutResult.iterator():
+      
         row.result = result
-           # this gets the unfiltered DP ( we want unfiltered just like the AD)
+            # this gets the unfiltered DP ( we want unfiltered just like the AD)
         info = row.info.split(";")
         for i in range(len( info)):
             infoList = info[i].split("=")
@@ -54,7 +55,7 @@ def extractFromFormat(result):
                 infoValue.append(".")
             else:
                 infoValue.append(infoElement[1])
-	
+        
         infoDict = dict(zip(infoKey,infoValue))
         row.infoDP = infoDict['DP']
         infoADString = infoDict['AD']
@@ -78,7 +79,8 @@ def exportToJson():
     with open("eggs/static/eggs/resultJson.json", "w") as out:
         json_serializer.serialize(Result.objects.all(), stream=out)
 
-# this just empties the results and VCFRow tables so that we can continue developing
-def cleanForDev():
+# this just empties the results and VCFRow and CSV objectstables so that we can continue developing
+def refresh():
     Result.objects.all().delete()
     VCFRow.objects.all().delete()
+    CSV.objects.all().delete()

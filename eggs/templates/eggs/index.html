@@ -2,15 +2,24 @@
 
 
 <h1>Choose how to upload files.</h1>
-
+    {% comment %} <div class="clear">
+            {% comment %} <form method="POST" action="{% url 'index'%}"> {% endcomment %}
+              {% comment %} <form  action="">
+                {% csrf_token %}
+                <input type="submit" value="Refresh data">
+                    <p id="clearStatus">Data refreshed</p> 
+            </form>
+         
+        </div>  {% endcomment %} 
     <div class="determineInputType">
         <form action="">
             <input  type="radio" name="inputKind" value="fast" id="fastButton">Upload FASTA and FASTQ</br>
             <input  type="radio" name="inputKind" value="csv" id="csvButton">Upload a CSV</br>
-            </br>
+            
 
-        </form>
+        </form>   
     </div>
+
     <div class="formSelectInput">
         <form method="GET" action="{% url 'uploadSelectFasta' %}">
             <input type="submit" value="Select individual FASTA and FASTQ files">

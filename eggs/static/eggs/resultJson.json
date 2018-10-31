@@ -1,1 +1,1 @@
-[{"model": "eggs.result", "pk": 34, "fields": {"batch": "fixed", "timeCreated": "2018-10-24T18:37:08.052Z", "significantVariantCount": 53614, "totalCount": 53998}}]
+[{"model": "eggs.result", "pk": 47, "fields": {"batch": "sample1_campylo", "timeCreated": "2018-10-30T15:58:54.739Z", "significantVariantCount": 10592, "totalCount": 10657}}, {"model": "eggs.result", "pk": 48, "fields": {"batch": "sample2_salmonella", "timeCreated": "2018-10-30T15:58:54.836Z", "significantVariantCount": 62913, "totalCount": 63514}}]

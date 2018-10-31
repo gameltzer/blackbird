@@ -35,14 +35,17 @@ def uploadSelectFasta(request):
                 'reference_form' : reference_form,
             }
     else:
+        # remove from the database the info
+        refresh()
         context = {
             'reference_form' : UploadReferenceForm()
         }   
 #    return render(request,'eggs/upload.html', context)
     return render(request,'eggs/uploadSelectFasta.html', context)
 
-def uploadCSV(request):
-    return render(request, 'eggs/uploadCSV.html')
+# def uploadCSV(request):
+#     refresh()
+#     return render(request, 'eggs/uploadCSV.html')
 
 def batchCreate(request):
     if request.method == 'POST':
@@ -55,6 +58,8 @@ def batchCreate(request):
                 'batch_form': batch_form
             }
     else:
+        # remove from the database the info
+       
         context = { 
             'batch_form' : BatchForm()
         }
@@ -153,13 +158,16 @@ def tabulate(request):
 def graph(request):
     return render(request, 'eggs/graph.html')
 
+# def tabulateCSV(request):
+#     return render(request, 'eggs/tabulateCSV.html')
+
 # This is the view for uploading a CSV. A class-based approach is used because
 # it is much more complicated. 
 class CSVView(View):
     form_class = CSVForm
     template_name = 'eggs/uploadCSV.html'
-    def success(self, request, template, filename):
-        return HttpResponseRedirect('submitCSV')
+    # def success(self, request, template, filename):
+    #     return HttpResponseRedirect('submitCSV')
   
     # this returns  a tuple with the id representing the CSV model object 
     # and the CSV lIST
@@ -249,8 +257,39 @@ class CSVView(View):
             call([pipelineName, sample1, sample2, reference, basename])
             os.chdir(wd)
 
+    #This returns a list with the Result objects.
+    def createResults(self, batchGroup):
+        resList=[]
+        for batch in batchGroup:
+            keyIter = batch.iterkeys()
+            basename = keyIter.next()
+            # print(basename)
+            res = Result(batch = Batch.objects.get(pk=basename))
+            print(res)
+            res.save()
+            resList.append(res)
+        return resList
+ 
+    def storeVCFsFromCSV(self, resList):
+        wd = os.getcwd()
+        os.chdir("aviary")
+        for res in resList:
+            vcfName = "final"+ str(res.batch) +".vcf"
+            storeVcf(vcfName)
+            #Anything that doesn't have a result in it gets parsed and has a result.
+            extractFromFormat(res)
+            # these results are now parsed. 
+            calculateVariants(res)
+
+        os.chdir(wd)
+
+
+
+
+
     # this asks the user for a CSV file according to the CSVForm class. 
     def get(self,request):
+        refresh()
         form = self.form_class()
         return render(request, self.template_name, {"form": form} )
     def post(self,request):
@@ -289,8 +328,10 @@ class CSVView(View):
                 csvBatchDictList.append(batchDict)
             print(csvBatchDictList)
             self.sendToPipeline(csvBatchDictList)
-            print("done")
-            return  render (request, self.template_name, {"Files": "done"})
+            resList = self.createResults(csvBatchDictList)
+            self.storeVCFsFromCSV(resList)
+            exportToJson()
+            return HttpResponseRedirect('graphCSV')
         return render(request, self.template_name, {"form":form})
 
 # class SubmitCSV(View):
@@ -325,3 +366,6 @@ class CSVView(View):
 #             os.chdir(wd)
 #             return HttpResponseRedirect('tabulate')
 #     return render(request, "eggs/submitCSV.html")
+
+def graphCSV(request):
+    return render(request, 'eggs/graphCSV.html')
