@@ -25,7 +25,7 @@ SECRET_KEY = '4-rcjw!ex+vkh2t#etm1y!vbza)&!p*9b8p43wnzg(sn8s-965'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['http://bluebird-env2.7t4mfpfkky.us-east-2.elasticbeanstalk.com/', 'localhost']
 
 
 # Application definition
@@ -126,6 +126,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 #location on particular machine
 linuxLocation = "/mnt/LinuxLanzaProject/" 
+STATIC_ROOT= 'static'
 
 #This is where uploaded files will be stored. 
 MEDIA_ROOT = linuxLocation+"blackbird/aviary/"
