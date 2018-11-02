@@ -90,7 +90,7 @@ DATABASES = {
         'USER': 'gamel',
        'PASSWORD': 'doodle',
         'HOST': '',
-        'PORT': '5433',
+        'PORT': os.environ['RDS_PORT'],
     }
 }
 
