@@ -129,9 +129,9 @@ USE_TZ = True
 
 # added 
 
-# CSRF_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
 
-# SESSION_COOKIE_SECURE=True
+SESSION_COOKIE_SECURE=True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
