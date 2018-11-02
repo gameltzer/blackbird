@@ -29,12 +29,12 @@ ALLOWED_HOSTS = ['bluebird-env2.7t4mfpfkky.us-east-2.elasticbeanstalk.com', 'loc
 
 # More security settings
 
-SECURE_BROWSER_XSS_FILTER=True
+# SECURE_BROWSER_XSS_FILTER=True
 
-# SECURE_SSL_REDIRECT=True
+# # SECURE_SSL_REDIRECT=True
 
-#SECURE_CONTENT_TYPE_NOSNIFF=True
-X_FRAME_OPTIONS='DENY'
+# #SECURE_CONTENT_TYPE_NOSNIFF=True
+# X_FRAME_OPTIONS='DENY'
 
 # Application definition
 
@@ -129,9 +129,9 @@ USE_TZ = True
 
 # added 
 
-CSRF_COOKIE_SECURE=True
+# CSRF_COOKIE_SECURE=True
 
-SESSION_COOKIE_SECURE=True
+# SESSION_COOKIE_SECURE=True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
