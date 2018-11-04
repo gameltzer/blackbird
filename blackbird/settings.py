@@ -150,7 +150,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT= 'static'
 
 #This is where uploaded files will be stored. 
-MEDIA_ROOT = "blackbird/aviary/"
+MEDIA_ROOT = "aviary/"
 
 # FILE_UPLOAD_MAX_MEMORY_SIZE = 2
 

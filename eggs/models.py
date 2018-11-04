@@ -11,8 +11,8 @@ class Reference(models.Model):
 # This is our primary key which auto-increments
     
     referenceID = models.AutoField(primary_key=True)
-    referenceFile = models.FileField()  
-    # referenceFile = models.FileField(upload_to="reference/")  
+    # referenceFile = models.FileField()  
+    referenceFile = models.FileField(upload_to="reference/")  
     def __str__(self):
         return self.referenceFile.name
     #This is so VSC doesn't complain. 
