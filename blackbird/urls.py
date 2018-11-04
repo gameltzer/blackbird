@@ -20,7 +20,7 @@ from django.contrib import admin
 urlpatterns = [
 # I am done testing things, so I comment the, worms reference out!     
 #    url(r'worms/', include('worms.urls')),
-    url(r'^$', include('eggs.urls')),
+    url(r'', include('eggs.urls')),
     url(r'^admin/', admin.site.urls),
 ]
 
