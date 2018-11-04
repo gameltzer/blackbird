@@ -146,7 +146,7 @@ SESSION_COOKIE_SECURE=False
 
 STATIC_URL = '/static/'
 #location on particular machine
-linuxLocation = "/mnt/LinuxLanzaProject/" 
+# linuxLocation = "/mnt/LinuxLanzaProject/" 
 STATIC_ROOT= 'static'
 
 #This is where uploaded files will be stored. 
