@@ -11,7 +11,8 @@ db = settings.DATABASES["default"]
 
 def storeVcf(vcfFileName):
     conn = psycopg2.connect("dbname="+ db['NAME'] + " "+ "user="+ db['USER'] + " "+ "password=" + " " + db['PASSWORD'] + " " +
-    "port="+ db['PORT'] + "host="+db["HOST"])
+    "port="+ db['PORT'] +" "+
+     "host="+db["HOST"])
     cur = conn.cursor()
     cleanVcfFileName = "clean"+ vcfFileName
     cleanVcfFile = open(cleanVcfFileName, "w+")
