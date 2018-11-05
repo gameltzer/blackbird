@@ -122,7 +122,8 @@ def submit(request):
             #The batch we are working with. 
     # This changes the directory to the one with the shell script (in the "aviary" media directory)        
             wd = os.getcwd()
-            os.chdir("aviary")
+            if not wd.endswith("/aviary"):
+                os.chdir("aviary")
     #This is the pipeline we use! 
             pipelineName="./nest.sh"
             call([pipelineName, sample1.sampleFile.name, sample2.sampleFile.name, reference.referenceFile.name, batch.batchName])
@@ -136,7 +137,8 @@ def tabulate(request):
         resultFileName = "final" + str(result.batch)+".vcf"
         wd = os.getcwd()
         # goes to the right directory
-        os.chdir("aviary")
+        if not wd.endswith("/aviary"):
+            os.chdir("aviary")
         #this function stores the vcfresults in the VCFRow Model
         storeVcf(resultFileName)
         # returns to previous directory
@@ -273,7 +275,8 @@ class CSVView(View):
  
     def storeVCFsFromCSV(self, resList):
         wd = os.getcwd()
-        os.chdir("aviary")
+        if not wd.endswith("/aviary"):
+            os.chdir("aviary")
         for res in resList:
             vcfName = "final"+ str(res.batch) +".vcf"
             storeVcf(vcfName)
