@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['bluebird-env.7t4mfpfkky.us-east-2.elasticbeanstalk.com', 'loca
 
 SECURE_BROWSER_XSS_FILTER=True
 
-SECURE_SSL_REDIRECT=True
+# SECURE_SSL_REDIRECT=True
 
 SECURE_CONTENT_TYPE_NOSNIFF=True
 X_FRAME_OPTIONS='DENY'
