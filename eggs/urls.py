@@ -18,5 +18,4 @@ urlpatterns = [
     url(r'^tabulate$',views.tabulate, name='tabulate'),
     url(r'^graphCSV$',views.graphCSV, name='graphCSV'),
     url(r'^batchCreate$',views.batchCreate, name='batchCreate'),
-    url(r'^)
 ] #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
