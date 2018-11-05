@@ -1,7 +1,7 @@
 var thisContainer = document.querySelector('.chart-container');
 
 // This lets us access our json File. 
-var requestURL = 'http://localhost:8000/static/eggs/resultJson.json';
+var requestURL = 'static/eggs/resultJson.json';
 var request = new XMLHttpRequest();
 request.open('GET',requestURL);
 request.responseType = 'json';
