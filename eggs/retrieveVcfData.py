@@ -4,12 +4,14 @@ from eggs.models import VCFRow, Result, CSV
 from django.db.models import F
 import os
 from django.core import serializers
+from django.conf import settings
 
+db = settings.DATABASES["default"]
 
 
 def storeVcf(vcfFileName):
-    conn = psycopg2.connect("""dbname=cardinal 
-    user=gamel port=5433""")
+    conn = psycopg2.connect("dbname="+ db['NAME'] + " "+ "user="+ db['USER'] + " "+ "password=" +db['PASSWORD'] + " " +
+    "port="+ db['PORT'] + "host="+db["HOST"]
     cur = conn.cursor()
     cleanVcfFileName = "clean"+ vcfFileName
     cleanVcfFile = open(cleanVcfFileName, "w+")
