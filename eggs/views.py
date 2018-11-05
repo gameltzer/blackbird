@@ -251,7 +251,8 @@ class CSVView(View):
             basename = str(keyIter.next())
             # This changes the directory to the one with the shell script (in the "aviary" media directory)        
             wd = os.getcwd()
-            os.chdir("aviary")
+            if not wd.endswith("/aviary"):
+                os.chdir("aviary")  
     #This is the pipeline we use! 
             pipelineName="./nest.sh"
             call([pipelineName, sample1, sample2, reference, basename])
