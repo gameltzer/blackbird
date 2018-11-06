@@ -133,7 +133,7 @@ def submit(request):
 
 def tabulate(request):
     if request.method =='POST':
-        result = Result.objects.latest("timeCreated")
+        Result.objects.filter(batch=Result.objects.latest("timeCreated").batch)
         resultFileName = "final" + str(result.batch)+".vcf"
         wd = os.getcwd()
         # goes to the right directory
