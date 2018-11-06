@@ -10,15 +10,15 @@ reference=$3
 #this is what the new output files are built using. (ecept for with bowtie2-build)
 filebase=$4
 #This is creating the index.
-/home/downloaded/bowtie2-2.3.4.3/bowtie2-build $reference $reference
+bowtie2-build $reference $reference
 
 
 #This uses filebase for the SAM file output by bowtie2. 
 samName=$filebase.sam
 
 #This requires that 1 and 2 must be properly associated with the correct 1 and 2 options.
-
-/home/downloaded/bowtie2-2.3.4.3/bowtie2 -x $reference -1 $sample1 -2 $sample2 -S $samName
+;
+bowtie2 -x $reference -1 $sample1 -2 $sample2 -S $samName
 
 # This stores the bam name
 bamName=$fileBase.bam
