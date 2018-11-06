@@ -145,7 +145,7 @@ def tabulate(request):
         os.chdir(wd)
         extractFromFormat(result)
         calculateVariants(result)
-        exportToJson()
+        exportToJson(result)
         return HttpResponseRedirect('graph')
     else:
         batch = Batch.objects.latest("timeCreated")
@@ -334,7 +334,7 @@ class CSVView(View):
             self.sendToPipeline(csvBatchDictList)
             resList = self.createResults(csvBatchDictList)
             self.storeVCFsFromCSV(resList)
-            exportToJson()
+            exportToJson(resList)
             return HttpResponseRedirect('graphCSV')
         return render(request, self.template_name, {"form":form})
 

@@ -76,11 +76,11 @@ def calculateVariants(thisResult):
     thisResult.save()
 
 # this saves all our results in a json file so that javascript can use it to make the graph
-def exportToJson():
+def exportToJson(results):
     JSONSerializer = serializers.get_serializer("json")
     json_serializer = JSONSerializer()
-    with open("static/eggs/resultJson.json", "w") as out:
-        json_serializer.serialize(Result.objects.all(), stream=out)
+    with open("../eggs/static/eggs/resultJson.json", "w") as out:
+        json_serializer.serialize(results, stream=out)
 
 # this just empties the results and VCFRow and CSV objectstables so that we can continue developing
 def refresh():
