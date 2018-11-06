@@ -334,7 +334,7 @@ class CSVView(View):
             self.sendToPipeline(csvBatchDictList)
             resList = self.createResults(csvBatchDictList)
             self.storeVCFsFromCSV(resList)
-            exportToJson(resList)
+            exportToJsonCsv(resList)
             return HttpResponseRedirect('graphCSV')
         return render(request, self.template_name, {"form":form})
 
