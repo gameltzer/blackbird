@@ -79,7 +79,7 @@ def calculateVariants(thisResult):
 def exportToJson():
     JSONSerializer = serializers.get_serializer("json")
     json_serializer = JSONSerializer()
-    with open("eggs/static/eggs/resultJson.json", "w") as out:
+    with open("static/eggs/resultJson.json", "w") as out:
         json_serializer.serialize(Result.objects.all(), stream=out)
 
 # this just empties the results and VCFRow and CSV objectstables so that we can continue developing
