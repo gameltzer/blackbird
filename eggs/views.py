@@ -133,7 +133,8 @@ def submit(request):
 
 def tabulate(request):
     if request.method =='POST':
-        Result.objects.filter(batch=Result.objects.latest("timeCreated").batch)
+        result = Result.objects.latest("timeCreated")
+        resultQuery = Result.objects.filter(batch=result.batch)
         resultFileName = "final" + str(result.batch)+".vcf"
         wd = os.getcwd()
         # goes to the right directory
@@ -145,7 +146,7 @@ def tabulate(request):
         os.chdir(wd)
         extractFromFormat(result)
         calculateVariants(result)
-        exportToJson(result)
+        exportToJson(resultQuery)
         return HttpResponseRedirect('graph')
     else:
         batch = Batch.objects.latest("timeCreated")
