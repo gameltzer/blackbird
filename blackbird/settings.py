@@ -99,7 +99,10 @@ else :
         'default':{
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'cardinal',
+            'USER': 'gamel',
             'PORT':5433,
+            'PASSWORD':'abba',
+            'HOST':'localhost',
         }
     }
 
@@ -146,8 +149,9 @@ SESSION_COOKIE_SECURE=False
 
 STATIC_URL = '/static/'
 #location on particular machine
-# linuxLocation = "/mnt/LinuxLanzaProject/" 
-STATIC_ROOT= 'static'
+# linuxLocation = "/mnt/LinuxLanzaProject/" 44
+#two different static files was highly confusing! this has been changed so they are all the same. 
+STATIC_ROOT= 'eggs/static/'
 
 #This is where uploaded files will be stored. 
 MEDIA_ROOT = "aviary/"

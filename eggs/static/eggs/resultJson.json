@@ -1,1 +1,1 @@
-[{"model": "eggs.result", "pk": 49, "fields": {"batch": "pneumonia", "timeCreated": "2018-10-31T22:41:04.775Z", "significantVariantCount": 16313, "totalCount": 16741}}]
+[{"model": "eggs.result", "pk": 59, "fields": {"batch": "thioe", "timeCreated": "2018-11-06T07:00:57.167Z", "significantVariantCount": 10592, "totalCount": 10657}}]
