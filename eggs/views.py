@@ -126,7 +126,8 @@ def submit(request):
                 os.chdir("aviary")
     #This is the pipeline we use! 
             pipelineName="./nest.sh"
-            call([pipelineName, sample1.sampleFile.name, sample2.sampleFile.name, reference.referenceFile.name, batch.batchName])
+            f = file("log", "w")
+            call([pipelineName, sample1.sampleFile.name, sample2.sampleFile.name, reference.referenceFile.name, batch.batchName],stdout = f)
             os.chdir(wd)
             return HttpResponseRedirect('tabulate')
     return render(request,'eggs/submitSample.html', context)
