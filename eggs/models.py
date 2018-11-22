@@ -3,16 +3,19 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.core.files import File
+from eggs.storage import OverwriteStorage
+
 
 
 # Create your models here.
 
+
+
 class Reference(models.Model):
 # This is our primary key which auto-increments
     
-    referenceID = models.AutoField(primary_key=True)
-    # referenceFile = models.FileField()  
-    referenceFile = models.FileField(upload_to="reference/")  
+    referenceID = models.AutoField(primary_key=True) 
+    referenceFile = models.FileField(upload_to="reference/",storage=OverwriteStorage())  
     def __str__(self):
         return self.referenceFile.name
     #This is so VSC doesn't complain. 
@@ -20,7 +23,7 @@ class Reference(models.Model):
 
 # for each CSV submission
 class CSV(models.Model):
-    csvFile = models.FileField(upload_to="csv/", null = True, verbose_name="Select a CSV File.")
+    csvFile = models.FileField(upload_to="csv/",storage= OverwriteStorage(), null = True, verbose_name="Select a CSV File.")
     timeCreated = models.DateTimeField(auto_now_add=True)
     objects = models.Manager()
 
@@ -48,7 +51,7 @@ class Sample(models.Model):
     #This is a char field because there is no reason why the submission name needs to be super long.
     #   The first argument to CharField is intended as a human readable name.
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
-    sampleFile = models.FileField(upload_to="sample") 
+    sampleFile = models.FileField(upload_to="sample", storage = OverwriteStorage()) 
     def __str__(self):
         return self.sampleFile.name
      #This is so VSC doesn't complain. 

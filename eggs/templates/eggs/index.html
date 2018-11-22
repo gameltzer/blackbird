@@ -20,14 +20,14 @@
         </form>   
     </div>
 
-    <div class="formSelectInput">
+    <div id="rawFASTA" >
         <form method="GET" action="{% url 'uploadSelectFasta' %}">
-            <input type="submit" value="Select individual FASTA and FASTQ files">
+            <input class="uploadInputOption" type="submit" value="Select individual FASTA and FASTQ files">
         </form>
     </div>
-    <div class="csvInput">
+    <div id="csvInput">
         <form method="GET" action="{% url 'uploadCSV' %}">
-         <input type="submit" value="Select CSV file">
+         <input class="uploadInputOption" type="submit" value="Select CSVid file">
     </div>
   
 </br>

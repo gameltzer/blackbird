@@ -6,7 +6,7 @@ from django.shortcuts import render
 from .forms import UploadReferenceForm, UploadSampleForm, BatchForm, CSVForm
 from django.forms import modelformset_factory
 from eggs.models import Sample, Reference, Batch,Result, CSV
-from subprocess import call
+from subprocess import call, check_output
 import os 
 from eggs.retrieveVcfData import *
 from django.views import View
@@ -107,6 +107,7 @@ def submit(request):
     batch=Batch.objects.latest("timeCreated")
     reference=batch.reference
     samples = []
+   
     # this gets the associated samples
     for sample in batch.sample_set.all():
         samples.append(sample)
@@ -119,6 +120,7 @@ def submit(request):
             "sample2" : sample2,
         }
     if request.method =='POST':
+          
             #The batch we are working with. 
     # This changes the directory to the one with the shell script (in the "aviary" media directory)        
             wd = os.getcwd()
@@ -126,8 +128,9 @@ def submit(request):
                 os.chdir("aviary")
     #This is the pipeline we use! 
             pipelineName="./nest.sh"
-            f = file("log", "w")
-            call([pipelineName, sample1.sampleFile.name, sample2.sampleFile.name, reference.referenceFile.name, batch.batchName],stdout = f)
+            # f = file("log", "w")
+            call([pipelineName, sample1.sampleFile.name, sample2.sampleFile.name, reference.referenceFile.name, batch.batchName])
+
             os.chdir(wd)
             return HttpResponseRedirect('tabulate')
     return render(request,'eggs/submitSample.html', context)

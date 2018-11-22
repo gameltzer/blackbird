@@ -6,7 +6,7 @@
     <form enctype="multipart/form-data" action="batchCreate" method="post">
         {% csrf_token %}
         {{ batch_form.as_p }}
-        <input type="submit" value="Create Batch"  /><br><br>
+        <input id="submit" type="submit" value="Create Batch"  /><br><br>
     </form>
 
 

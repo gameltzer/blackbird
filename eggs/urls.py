@@ -4,8 +4,8 @@ from django.conf.urls import url
 from eggs import views
 # this is for the static files
 
-# from django.conf import settings
-# from django.conf.urls.static import static 
+from blackbird import settings
+from django.conf.urls.static import static 
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
@@ -18,4 +18,4 @@ urlpatterns = [
     url(r'^tabulate$',views.tabulate, name='tabulate'),
     url(r'^graphCSV$',views.graphCSV, name='graphCSV'),
     url(r'^batchCreate$',views.batchCreate, name='batchCreate'),
-] #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

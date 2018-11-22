@@ -1,7 +1,7 @@
 fastChoice = document.getElementById("fastButton");
 csvChoice = document.getElementById("csvButton");
-formSelectInput = document.querySelector(".formSelectInput");
-csvInput = document.querySelector(".csvInput");
+formSelectInput = document.getElementById("rawFASTA");
+csvInput = document.getElementById("csvInput");
 // clearModels = document.querySelector(".clear");
 // clearStatus = document.getElementById("clearStatus");
 // choices =document.querySelector(".determineInputType");

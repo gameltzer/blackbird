@@ -1,6 +1,6 @@
 {% load static %}
 <style> 
-    #loader {
+    .loader {
         border: 16px solid #f3f3f3; /* Light grey */
         border-top: 16px solid #3498db; /* Blue */
         border-radius: 50%;
@@ -17,20 +17,26 @@
 
 <h1> Select set of files for processing</h1>
    <div>
-   <form enctype="multipart/form-data" action="submit" method="post">
+     {% comment %} <form enctype="multipart/form-data" action="submit" method="post"> {% endcomment %}
+   <form >
         {% csrf_token %}>
         <p>The batch is {{batch}}.</p>
         <p>The reference file is {{reference}}. </p>
         <p>The sample files are
          {{sample1}} and {{sample2}}/</p>
 
-        <input type="submit" value="Submit files for processing"  /><br><br>
+        <input id="submit" type="submit" value="Submit files for processing"  /><br><br>
+       
     </form>
  
 </div>
-<div class="loader" style="display:none"></div>
+<p id="status">{{status}}</p>
+ <div class="loader" style="display:none"></div>
+
 
 <a href="{% url 'index' %}">Home</a>
+<script src="{% static "eggs/node_modules/jquery/dist/jquery.js"%}"> </script>
+<script src="{% static "eggs/ajaxcsrf.js" %}"> </script>
 <script src="{% static "eggs/myLoader.js" %}" ></script>
 
 

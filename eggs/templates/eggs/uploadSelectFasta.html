@@ -11,7 +11,7 @@
         <form enctype="multipart/form-data" action="uploadSelectFasta" method="post">
             {% csrf_token %}
             {{ reference_form.as_p }}
-            <input type="submit" value="Upload reference files"  /><br><br>
+            <input id="submit" type="submit" name="submitReference" value="Upload reference files"  /><br><br>
         </form>
     </div>
     {% comment %} <div class="csvInput">
