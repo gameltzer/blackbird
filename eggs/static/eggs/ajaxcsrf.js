@@ -25,3 +25,11 @@ $.ajaxSetup({
         }
     }
 });
+// $.ajax({
+//     complete: function(xhr){
+//         // for some reason django doesn't automatically go to the rendered view, so I have to make sure jquery does it. 
+//         console.log("success");
+//         window.location.href = "tabulate";
+
+//     }
+// });

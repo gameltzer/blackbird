@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .forms import UploadReferenceForm, UploadSampleForm, BatchForm, CSVForm
 from django.forms import modelformset_factory
 from eggs.models import Sample, Reference, Batch,Result, CSV
@@ -10,14 +10,20 @@ from subprocess import call, check_output
 import os 
 from eggs.retrieveVcfData import *
 from django.views import View
-
+import logging
 from django.core.files.uploadhandler import TemporaryFileUploadHandler
+
+#This is for the log. 
+3
+logger = logging.getLogger("django.server")
 
 # Create your views here.
 
 from django.http import HttpResponse
 
 def index(request):
+    #Session expires when browser closes. 
+    request.session.set_expiry(0)
     return render(request, 'eggs/index.html')
 
 # def chooseUpload(request):
@@ -52,6 +58,8 @@ def batchCreate(request):
         batch_form = BatchForm(request.POST, request.FILES)
         if (batch_form.is_valid()):
             batch_form.save()
+# this stores the batch name we have retrieved
+            request.session["batchName"] = batch_form.instance.batchName
             return HttpResponseRedirect('uploadSelectFasta/uploadSample')
         else: 
             context = {
@@ -68,7 +76,8 @@ def batchCreate(request):
 
 def uploadSample(request):
     UploadSampleFormset = modelformset_factory(Sample, form = UploadSampleForm, extra=2)
-    thisBatch = Batch.objects.latest('timeCreated')
+    #The batch object is retrieved using the name in the session.
+    thisBatch = Batch.objects.get(batchName=request.session["batchName"])
     batchName = thisBatch.batchName
     batchReference = thisBatch.reference
     if request.method == 'POST':
@@ -104,7 +113,9 @@ def submit(request):
     # also consider creating 
     #
     # The arguments for the shell script
-    batch=Batch.objects.latest("timeCreated")
+    # The batch object is retrieved using the information in the session. 
+    batch=Batch.objects.get(batchName=request.session["batchName"])
+    # print(batch.batchName)
     reference=batch.reference
     samples = []
    
@@ -117,27 +128,53 @@ def submit(request):
             "batch" : batch,
             "reference" : reference,
             "sample1" : sample1,
+            
             "sample2" : sample2,
         }
-    if request.method =='POST':
+    if request.method =='POST' :
           
-            #The batch we are working with. 
-    # This changes the directory to the one with the shell script (in the "aviary" media directory)        
-            wd = os.getcwd()
-            if not wd.endswith("/aviary"):
-                os.chdir("aviary")
-    #This is the pipeline we use! 
-            pipelineName="./nest.sh"
-            # f = file("log", "w")
-            call([pipelineName, sample1.sampleFile.name, sample2.sampleFile.name, reference.referenceFile.name, batch.batchName])
+        #The batch we are working with. 
+# This changes the directory to the one with the shell script (in the "aviary" media directory)        
+        wd = os.getcwd()
+        if not wd.endswith("/aviary"):
+            os.chdir("aviary")
+#This is the pipeline we use! 
+        pipelineName="./nest.sh"
+        # f = file("log", "w")
+        call([pipelineName, sample1.sampleFile.name, sample2.sampleFile.name, reference.referenceFile.name, batch.batchName])
 
-            os.chdir(wd)
-            return HttpResponseRedirect('tabulate')
+        
+        os.chdir(wd)
+        print(os.getcwd())
+        #A redirect is not returned because the redirect needs to be handled with JavaScript to make sure that django doesn't "step over" the ajax being used for the loader and conflict with it.
+        return HttpResponse("Done.")
     return render(request,'eggs/submitSample.html', context)
 
 def tabulate(request):
+    # The batch object is retrieved using the information in the setting.
+    batch = Batch.objects.get(batchName=request.session["batchName"])
+    resultQuerySet=Result.objects.filter(batch=batch.batchName)
+    logger.info(batch)
+    logger.info(resultQuerySet)
+    # Prevents enteriing duplicates, which isn't allowed by the relation *result*.
+    if resultQuerySet.exists():
+        logger.info("condition1")
+        result = Result.objects.get(batch=batch)
+        logger.info(result.batch)
+
+    else: 
+        logger.info("condition2")
+        # the problem has something to do wit this#
+        result = Result(batch=batch)
+        # logger.info(Result.objects.get(batch=batch.batchName).batch)
+        logger.info("Before save: " + str(result.batch))
+        logger.info("batches:" + str(Batch.objects.all()))
+        result.save()
+        # logger.info("After save: " + str(result.batch))
+    print("this is the result: " + str(result))
+    resultFileName = "final" + str(result.batch)+".vcf"
     if request.method =='POST':
-        result = Result.objects.latest("timeCreated")
+        result = Result.objects.get(batch=request.session["batchName"].batchName)
         resultQuery = Result.objects.filter(batch=result.batch)
         resultFileName = "final" + str(result.batch)+".vcf"
         wd = os.getcwd()
@@ -152,15 +189,11 @@ def tabulate(request):
         calculateVariants(result)
         exportToJson(resultQuery)
         return HttpResponseRedirect('graph')
-    else:
-        batch = Batch.objects.latest("timeCreated")
-        result = Result(batch=batch)
-        result.save()
-        resultFileName = "final" + str(result.batch)+".vcf"
-        context ={
-        "resultFileName": resultFileName,
-        }
-    return render(request,'eggs/tabulate.html',context)
+    context ={
+    "resultFileName": resultFileName,
+    }  
+    print(resultFileName)
+    return render(request,'eggs/tabulate.html', context)
 
 def graph(request):
     return render(request, 'eggs/graph.html')

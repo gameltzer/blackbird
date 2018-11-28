@@ -1,22 +1,71 @@
  # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.test import TestCase
+from django.test import TestCase, Client
 
 # thins in example at https://docs.djangoproject.com/en/1.11/topics/testing/tools/#django.test.LiveServerTestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support.ui import Select, WebDriverWait
+from eggs.models import Batch, Reference, Sample
+from selenium.common.exceptions import TimeoutException
 # Create your tests here.
 
+# This is to figure out what's going on with tabulate. 
+class TabulateTest(TestCase):
+    pathOfFilesToUpload = "/mnt/LinuxLanzaProject/csvDevTest/"
+    referenceFileName = "RefSalmonellaGCF000195995.1_ASM.fna"
+    sample1FileName = "Salmonella_enterica_SRR8110782_1.fastq"
 
+    sample2FileName = "Salmonella_enterica_SRR8110782_2.fastq"
+    client=Client()
+    
+
+    def initialize(self): 
+        session = self.client.session
+        r = Reference(referenceFile=self.pathOfFilesToUpload + self.referenceFileName)
+        r.save()
+        b = Batch(batchName="tabulateThis", reference = r)
+        b.save()
+        s1 = Sample(sampleFile=self.sample1FileName, batch=b)
+        s1.save()
+        s2 = Sample(sampleFile=self.sample2FileName, batch=b)
+        s2.save()
+        session["batchName"]=b.batchName
+        session.save()
+
+  
+    
+    def test_Submit(self):
+        self.initialize()
+        response = self.client.get('/submit')
+        print(response)
+        self.assertEqual(response.status_code, 200)
+
+    def test_Tabulate(self):
+        self.initialize()
+        response = self.client.get('/tabulate')
+        print(response)
+        self.assertEqual(response.status_code, 200)
+
+class notOnSubmit(object):
+    # we will need the page source to be able to check
+    def __init__(self, pageSource):
+        self.page_source=pageSource
+    
+    def __call__(self, driver):
+        if "Select set of files for processing" in self.page_source:
+            return False
+        else:
+            return True
 
 class EggsTests(StaticLiveServerTestCase):
     #location of folder files will be uploaded from on linux virtual machine.
     pathOfFilesToUpload = "/mnt/LinuxLanzaProject/csvDevTest/"
     referenceFileName = "RefSalmonellaGCF000195995.1_ASM.fna"
     sample1FileName = "Salmonella_enterica_SRR8110782_1.fastq"
+
     sample2FileName = "Salmonella_enterica_SRR8110782_2.fastq"
     @classmethod
     def setUpClass(cls):
@@ -25,10 +74,10 @@ class EggsTests(StaticLiveServerTestCase):
         cls.selenium.implicitly_wait(10)
         cls.selenium.get(cls.live_server_url)
 
-    @classmethod
+    # @classmethod
     # def tearDownClass(cls):
     #     cls.selenium.quit()
-    #     super(chooseFilesForSingleExampleTest, cls).tearDownClass()
+    #     super(EggsTests, cls).tearDownClass()
 
     
     # this clicks on the button which activates the javascript
@@ -84,7 +133,15 @@ class EggsTests(StaticLiveServerTestCase):
     # this submits the references and the samples
     def submitBatch(self):
         assert "Select set of files for processing" in self.selenium.page_source
-        self.selenium.find_element_by_id("submit").click()
+        self.selenium.find_element_by_id("submitBatch").click()
+    
+    # this tabulates the test results.
+    def tabulateBatch(self):
+        assert "Tabulate data from the vcf" in self.selenium.page_source
+        self.selenium.find_element_by_id("submitTabulate").click()
+    
+    def graphBatch(self):
+        assert "Number of mutations." in self.selenium.page_source
 
         
     def test_Tester(self):
@@ -97,6 +154,10 @@ class EggsTests(StaticLiveServerTestCase):
         self.labelBatch()
         self.uploadSampleFiles()
         self.submitBatch()
+        wait = WebDriverWait(self.selenium, 0, ignored_exceptions=(TimeoutException))
+        wait.until(notOnSubmit(self.selenium.page_source))
+        self.tabulateBatch()
+        self.graphBatch()
 
 
     

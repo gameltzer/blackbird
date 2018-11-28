@@ -18,26 +18,25 @@
 <h1> Select set of files for processing</h1>
    <div>
      {% comment %} <form enctype="multipart/form-data" action="submit" method="post"> {% endcomment %}
-   <form >
+   <form action="submit" method="post" >
         {% csrf_token %}>
-        <p>The batch is {{batch}}.</p>
         <p>The reference file is {{reference}}. </p>
         <p>The sample files are
          {{sample1}} and {{sample2}}/</p>
 
-        <input id="submit" type="submit" value="Submit files for processing"  /><br><br>
+        <input id="submitBatch" type="submit" value="Submit files for processing"  /><br><br>
+        {% comment %} <button id="submitBatch" type="button">Submit files for processing</button><br><br> {% endcomment %}
        
-    </form>
+    {% comment %} </form> {% endcomment %}
  
-</div>
-<p id="status">{{status}}</p>
+
  <div class="loader" style="display:none"></div>
 
 
 <a href="{% url 'index' %}">Home</a>
 <script src="{% static "eggs/node_modules/jquery/dist/jquery.js"%}"> </script>
-<script src="{% static "eggs/ajaxcsrf.js" %}"> </script>
-<script src="{% static "eggs/myLoader.js" %}" ></script>
+<script src="{% static "eggs/ajaxcsrf.js" %}"> </script> 
+<script src="{% static "eggs/myLoader.js" %}" ></script> 
 
 
 
