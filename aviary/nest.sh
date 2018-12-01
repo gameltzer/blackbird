@@ -35,7 +35,7 @@ vcfName=$filebase.vcf
 sortedBamName=$filebase.Sorted.bam 
 
 #The creates a sorted bam file, and then, using bcftools mpileup, generates a vcf file with he proper annotations.
-samtools sort -O BAM $bamName -o $sortedBamName && bcftools mpileup -f $reference -a INFO/AD -o $vcfName -O v $sortedBamName
+samtools sort -m  500M -O BAM $bamName -o $sortedBamName && bcftools mpileup -f $reference -a INFO/AD -o $vcfName -O v $sortedBamName
 
 ## this gets us a variant only file. The ploidy is specified as 1 because it is a bacterial genome. 
 bcftools call --ploidy 1 -mv -Ov -o final$vcfName $vcfName
