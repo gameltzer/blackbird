@@ -94,4 +94,4 @@ def exportToJson(results):
 def refresh():
     Result.objects.all().delete()
     VCFRow.objects.all().delete()
-    CSV.objects.all().delete()
+    Csv.objects.all().delete()
