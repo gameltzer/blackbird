@@ -19,21 +19,19 @@ function myLoad(){
 }
 
 function handle() {
-    if (this.readyState !== 4 && this.status !== 203) {
+    if (this.readyState !== 4) {
         document.querySelector(".loader").style.display="block";
-        console.log("Ready State"+ this.readyState);
-        console.log(this.status);
-        console.log(this.responseText);
-        console.log(this.getAllResponseHeaders());
     } 
     else {
         document.querySelector(".loader").style.display="none";
-        console.log("Ready State"+ this.readyState);
-        console.log(this.status);
-        console.log(this.responseText);
-        console.log(this.getAllResponseHeaders());
-        console.log("success");
+        var readyStateLog = "Ready State"+ this.readyState;
+        var statusLog = this.status;
+        var responseTextLog = this.responseText;
+        var responseHeaderLog  = this.getAllResponseHeaders();
+        var successLog = "success";
         window.location.href = "tabulate";
+        var logMessage = "Log from submit page:\n"+ readyStateLog + "\n" + statusLog + "\n" + responseTextLog + "\n" + responseHeaderLog + "\n" + successLog;
+        console.log(logMessage);
         // if (this.responseText === "Done." ){
         //     console.log("message recieved that things are done");
         //     xhttp.open("GET","tabulate", true);

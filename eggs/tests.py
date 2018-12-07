@@ -10,6 +10,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from eggs.models import Batch, Reference, Sample
 from selenium.common.exceptions import TimeoutException
+import traceback
+import sys
 # Create your tests here.
 
 # This is to figure out what's going on with tabulate. 
@@ -36,29 +38,36 @@ class TabulateTest(TestCase):
         session.save()
 
   
-    
-    def test_Submit(self):
+#The not was added so it isn't treated as a test.
+    def not_test_Submit(self):
         self.initialize()
         response = self.client.get('/submit')
         print(response)
         self.assertEqual(response.status_code, 200)
-
-    def test_Tabulate(self):
+#The not was added so it isn't treated as a test. 
+    def not_test_Tabulate(self):
         self.initialize()
         response = self.client.get('/tabulate')
         print(response)
         self.assertEqual(response.status_code, 200)
 
 class notOnSubmit(object):
-    # we will need the page source to be able to check
-    def __init__(self, pageSource):
-        self.page_source=pageSource
-    
     def __call__(self, driver):
-        if "Select set of files for processing" in self.page_source:
+        page_source = driver.page_source
+        if "Select set of files for processing" in page_source:
             return False
         else:
+            print("notOnSubmit returned True")
             return True
+class NotOnUploadCsv(object):
+    def __call__(self, driver):
+        page_source = driver.page_source
+        if "Upload Csv File" in page_source:
+            return False
+        else:
+            print("notOnSubmit returned True")
+            return True
+
 
 class EggsTests(StaticLiveServerTestCase):
     #location of folder files will be uploaded from on linux virtual machine.
@@ -67,6 +76,7 @@ class EggsTests(StaticLiveServerTestCase):
     sample1FileName = "Salmonella_enterica_SRR8110782_1.fastq"
 
     sample2FileName = "Salmonella_enterica_SRR8110782_2.fastq"
+    csvFilename = "sample.csv"
     @classmethod
     def setUpClass(cls):
         super(EggsTests, cls).setUpClass()
@@ -74,16 +84,12 @@ class EggsTests(StaticLiveServerTestCase):
         cls.selenium.implicitly_wait(10)
         cls.selenium.get(cls.live_server_url)
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #     cls.selenium.quit()
-    #     super(EggsTests, cls).tearDownClass()
+    @classmethod
+    def tearDownClass(cls):
+        cls.selenium.quit()
+        super(EggsTests, cls).tearDownClass()
 
     
-    # this clicks on the button which activates the javascript
-    def pickSingleSampleSet(self):
-        self.selenium.find_element_by_id('fastButton').click()
-        assert "Upload" in self.selenium.page_source
     # this clicks on the button that will send us to the next page. 
     def selectUploadOption(self):
         uploadInputOptions = self.selenium.find_elements_by_class_name("uploadInputOption")
@@ -95,6 +101,14 @@ class EggsTests(StaticLiveServerTestCase):
         if optionElement == None:
             raise Exception
         optionElement.click()
+    
+class SingleSampleTest(EggsTests):
+
+        # this clicks on the button which activates the javascript
+    def pickSingleSampleSet(self):
+        
+        self.selenium.find_element_by_id('fastButton').click()
+        assert "Choose how to upload files." in self.selenium.page_source
     # this automates the upload reference file page
     def uploadReference(self):
         assert "Upload Reference File" in self.selenium.page_source
@@ -140,8 +154,11 @@ class EggsTests(StaticLiveServerTestCase):
         assert "Tabulate data from the vcf" in self.selenium.page_source
         self.selenium.find_element_by_id("submitTabulate").click()
     
+    #This handles the graphing and is the end of the workflow.
     def graphBatch(self):
         assert "Number of mutations." in self.selenium.page_source
+
+   
 
         
     def test_Tester(self):
@@ -154,10 +171,38 @@ class EggsTests(StaticLiveServerTestCase):
         self.labelBatch()
         self.uploadSampleFiles()
         self.submitBatch()
-        wait = WebDriverWait(self.selenium, 0, ignored_exceptions=(TimeoutException))
-        wait.until(notOnSubmit(self.selenium.page_source))
+        wait = WebDriverWait(self.selenium, 24*7200)
+        wait.until(notOnSubmit())
         self.tabulateBatch()
         self.graphBatch()
+    
+class CsvSamplesTest(EggsTests):
+    def pickCsv(self):
+        assert "Choose how to upload files." in self.selenium.page_source
+        self.selenium.find_element_by_id("csvButton").click()
+    
+    def uploadCsvFiles(self):
+        assert "Upload CSV File" in self.selenium.page_source
+        csvFile = self.selenium.find_element_by_name("csvFile")
+        csvFile.clear()
+        csvFile.send_keys(self.pathOfFilesToUpload + self.csvFilename)
+        self.selenium.find_element_by_id("submitCSV").click()
+    def graphCsv(self):
+        assert "Number of mutations." in self.selenium.page_source
+        
+
+    def test_Csv(self):
+        self.pickCsv()
+        self.selectUploadOption()
+        self.uploadCsvFiles()
+        # wait = WebDriverWait(self.selenium, 24*7200)
+        # wait.until(NotOnUploadCsv())
+        # self.graphCsv()
+    
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
 
 
     

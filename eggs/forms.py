@@ -1,6 +1,6 @@
 
 from django import forms
-from eggs.models import Reference, Sample, Batch, CSV
+from eggs.models import Reference, Sample, Batch, Csv
 # This is for uploading the reference file
 class UploadReferenceForm(forms.ModelForm):
     class Meta:
@@ -14,14 +14,15 @@ class UploadSampleForm(forms.ModelForm):
         fields =['sampleFile']
 
 
+
 # Try maybe entering the batch on the reference page
 class BatchForm(forms.ModelForm):
     class Meta:
         model = Batch
         fields = ['batchName','reference']
 
-# This just gathers a CSV file before it is parsed.
-class CSVForm(forms.ModelForm):
+# This just gathers a Csv file before it is parsed.
+class CsvForm(forms.ModelForm):
     class Meta: 
-        model = CSV
+        model = Csv
         fields = ['csvFile']

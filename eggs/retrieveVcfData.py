@@ -1,6 +1,6 @@
 import psycopg2 
 from subprocess import call
-from eggs.models import VCFRow, Result, CSV
+from eggs.models import VCFRow, Result, Csv
 from django.db.models import F
 import os
 from django.core import serializers
@@ -82,9 +82,13 @@ def exportToJson(results):
     with open("eggs/static/eggs/resultJson.json", "w") as out:
         json_serializer.serialize(results, stream=out)
 
-def exportToJsonCsv(resultList):
-    print("this isn't done yet")
-    pass
+# def exportToJsonCsv(resultList):
+#     pass
+    # JSONSerializer = serializers.get_serializer("json")
+    # json_serializer = JSONSerializer()
+    # with open("eggs/static/eggs/resultJson.json", "w") as out:
+    #     json_serializer.serialize(resultList, stream=out)
+    
 
 # this just empties the results and VCFRow and CSV objectstables so that we can continue developing
 def refresh():

@@ -1,15 +1,39 @@
+{% load static %}
+
+<style> 
+    .loader {
+        border: 16px solid #f3f3f3; /* Light grey */
+        border-top: 16px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
 <h1>Upload CSV File </h1>
 </br>
 </br>
-<form enctype="multipart/form-data" method="post" action="uploadCSV">
+<form enctype="multipart/form-data" method="POST" action="uploadCsv">
     {% csrf_token %}
     {{form.as_p}}</br>
     {{Filename}}</br>
     </br></br>
-    <input type="submit" value="Process file"/>
+    <input id="submitCSV" type="submit" value="Process file"/>
 </form>
 </br>
 </br>
 
+ <div class="loader" style="display:none"></div>
 
 <a href="{% url 'index' %}">Home</a>
+
+{% comment %} <script src="{% static "eggs/node_modules/jquery/dist/jquery.js"%}"> </script>
+<script src="{% static "eggs/ajaxcsrf.js" %}"> </script> 
+
+<script src="{% static "eggs/myLoaderCsv.js" %}" ></script>  {% endcomment %}
