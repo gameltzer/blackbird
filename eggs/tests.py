@@ -12,6 +12,14 @@ from eggs.models import Batch, Reference, Sample
 from selenium.common.exceptions import TimeoutException
 import traceback
 import sys
+import logging
+import os
+# from selenium.webdriver.common.desired_capabilties import DesiredCapabilities
+from subprocess import call
+
+
+
+logger = logging.getLogger("django.server")
 # Create your tests here.
 
 # This is to figure out what's going on with tabulate. 
@@ -62,10 +70,11 @@ class notOnSubmit(object):
 class NotOnUploadCsv(object):
     def __call__(self, driver):
         page_source = driver.page_source
-        if "Upload Csv File" in page_source:
+        #CSV is all upercase here because this is what the user is seeing.
+        if "Upload CSV File" in page_source:
             return False
         else:
-            print("notOnSubmit returned True")
+            print("notOnUploadCSV returned True")
             return True
 
 
@@ -76,11 +85,18 @@ class EggsTests(StaticLiveServerTestCase):
     sample1FileName = "Salmonella_enterica_SRR8110782_1.fastq"
 
     sample2FileName = "Salmonella_enterica_SRR8110782_2.fastq"
+
     csvFilename = "sample.csv"
+    #CHROME#
     @classmethod
     def setUpClass(cls):
         super(EggsTests, cls).setUpClass()
+        # This allows console logging to be redirect to the django log
+        # d = webdriver.DesiredCapabilities.CHROME
+        # d['loggingPrefs'] = {'browser': 'ALL'}
+        # cls.selenium = webdriver.chrome.webdriver.WebDriver(desired_capabilities=d)
         cls.selenium = webdriver.chrome.webdriver.WebDriver()
+        # cls.selenium = webdriver.firefox.webdriver.WebDriver()
         cls.selenium.implicitly_wait(10)
         cls.selenium.get(cls.live_server_url)
 
@@ -109,13 +125,18 @@ class SingleSampleTest(EggsTests):
         
         self.selenium.find_element_by_id('fastButton').click()
         assert "Choose how to upload files." in self.selenium.page_source
+
+    # Picks the reference file
+    def pickReference(self):
+        fileUpload= self.selenium.find_element_by_name("referenceFile")
+
+        fileUpload.clear()
+        fileUpload.send_keys(self.pathOfFilesToUpload + self.referenceFileName)
     # this automates the upload reference file page
     def uploadReference(self):
         assert "Upload Reference File" in self.selenium.page_source
-        fileUpload= self.selenium.find_element_by_name("referenceFile")
+        self.pickReference()
         submitReference = self.selenium.find_element_by_name("submitReference")
-        fileUpload.clear()
-        fileUpload.send_keys(self.pathOfFilesToUpload + self.referenceFileName)
         submitReference.click()
     
     # This selects files from drop down menus
@@ -123,25 +144,32 @@ class SingleSampleTest(EggsTests):
         select = Select(self.selenium.find_element_by_name(selectorElementName))
         select.select_by_visible_text(desiredValue)
 
+    #this enters our test Batch
+    def enterBatch(self):
+        batchName = self.selenium.find_element_by_name("batchName")
+        batchName.clear()
+        batchName.send_keys("example")
     # This performs the acction of labeling the batch. It also selects the reference file from the menu
     # and submits.
     def labelBatch(self):
         assert "BatchName" in self.selenium.page_source
-        batchName = self.selenium.find_element_by_name("batchName")
-        batchName.clear()
-        batchName.send_keys("example")
+        self.enterBatch()
         self.selectFileFromDropDown("reference",str("reference/"+self.referenceFileName))
         self.selenium.find_element_by_id("submit").click()
 
-    # this uploads the sample files
-    def uploadSampleFiles(self):
-        assert "The batch is" in self.selenium.page_source
+    def pickSamples(self):
         sample1 = self.selenium.find_element_by_name("form-0-sampleFile")
         sample2 = self.selenium.find_element_by_name("form-1-sampleFile")
         sample1.clear()
         sample1.send_keys(self.pathOfFilesToUpload + self.sample1FileName)
         sample2.clear()
         sample2.send_keys(self.pathOfFilesToUpload + self.sample2FileName)
+
+
+    # this uploads the sample files
+    def uploadSampleFiles(self):
+        assert "The batch is" in self.selenium.page_source
+        self.pickSamples()
         self.selenium.find_element_by_id("submit").click()
 
     # this submits the references and the samples
@@ -159,8 +187,14 @@ class SingleSampleTest(EggsTests):
         assert "Number of mutations." in self.selenium.page_source
 
    
+    def uploadSingleBatch(self, submit=True):
+        assert "Upload Batch Files" in self.selenium.page_source
+        self.pickReference()
+        self.enterBatch()
+        self.pickSamples()
+        if (submit==True):
+            self.selenium.find_element_by_name("uploadEntireBatch").click()
 
-        
     def test_Tester(self):
         self.pickSingleSampleSet()
      
@@ -173,8 +207,22 @@ class SingleSampleTest(EggsTests):
         self.submitBatch()
         wait = WebDriverWait(self.selenium, 24*7200)
         wait.until(notOnSubmit())
-        self.tabulateBatch()
+        # self.tabulateBatch()
         self.graphBatch()
+
+    def test_ImproveEfficency(self):
+        self.pickSingleSampleSet()
+        self.selectUploadOption()
+        self.uploadSingleBatch()
+        self.submitBatch()
+        wait = WebDriverWait(self.selenium, 24*7200)
+        wait.until(notOnSubmit())
+        # self.tabulateBatch()
+        self.graphBatch()
+
+    # @classmethod
+    # def tearDownClass(cls):
+    #     pass
     
 class CsvSamplesTest(EggsTests):
     def pickCsv(self):
@@ -186,22 +234,34 @@ class CsvSamplesTest(EggsTests):
         csvFile = self.selenium.find_element_by_name("csvFile")
         csvFile.clear()
         csvFile.send_keys(self.pathOfFilesToUpload + self.csvFilename)
-        self.selenium.find_element_by_id("submitCSV").click()
+        self.selenium.find_element_by_id("uploadCSV").click()
     def graphCsv(self):
         assert "Number of mutations." in self.selenium.page_source
         
+    def outputLog(self):
+        for entry in self.selenium.get_log('browser'):
+            logger.info(entry)
+    # This calls the celry worker
+    def celery_worker(self):
+        # celery -A proj worker -l info
+        # call(["celery", "multi", "start", "w1", "-A", "blackbird", "-l", "info"])
+        pass
 
     def test_Csv(self):
+        self.celery_worker()
         self.pickCsv()
         self.selectUploadOption()
         self.uploadCsvFiles()
         # wait = WebDriverWait(self.selenium, 24*7200)
         # wait.until(NotOnUploadCsv())
         # self.graphCsv()
-    
-    @classmethod
-    def tearDownClass(cls):
-        pass
+        # self.outputLog()
+   
+   
+
+    # @classmethod
+    # def tearDownClass(cls):
+    #     pass
 
 
 

@@ -7,8 +7,15 @@
         border-radius: 50%;
         width: 120px;
         height: 120px;
+        -webkit-animation: spin 2s linear infinite; /* Safari */
         animation: spin 2s linear infinite;
     }
+
+    /* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
 
     @keyframes spin {
         0% { transform: rotate(0deg); }
@@ -17,23 +24,20 @@
 </style>
 
 <h1>Upload CSV File </h1>
-</br>
-</br>
-<form enctype="multipart/form-data" method="POST" action="uploadCsv">
+<form enctype="multipart/form-data" >
     {% csrf_token %}
     {{form.as_p}}</br>
-    {{Filename}}</br>
-    </br></br>
-    <input id="submitCSV" type="submit" value="Process file"/>
+    <input id="uploadCSV" type="submit" value="Extract info from CSV"/>
 </form>
 </br>
-</br>
+
 
  <div class="loader" style="display:none"></div>
-
+</br>
+</br>
 <a href="{% url 'index' %}">Home</a>
 
-{% comment %} <script src="{% static "eggs/node_modules/jquery/dist/jquery.js"%}"> </script>
+<script src="{% static "eggs/node_modules/jquery/dist/jquery.js"%}"> </script>
 <script src="{% static "eggs/ajaxcsrf.js" %}"> </script> 
+<script src="{% static "eggs/csvUploadLoader.js" %}"> </script>
 
-<script src="{% static "eggs/myLoaderCsv.js" %}" ></script>  {% endcomment %}

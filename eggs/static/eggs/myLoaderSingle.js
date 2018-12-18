@@ -29,7 +29,7 @@ function handle() {
         var responseTextLog = this.responseText;
         var responseHeaderLog  = this.getAllResponseHeaders();
         var successLog = "success";
-        window.location.href = "tabulate";
+        window.location.href = "graph";
         var logMessage = "Log from submit page:\n"+ readyStateLog + "\n" + statusLog + "\n" + responseTextLog + "\n" + responseHeaderLog + "\n" + successLog;
         console.log(logMessage);
         // if (this.responseText === "Done." ){

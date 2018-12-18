@@ -19,7 +19,7 @@ class UploadSampleForm(forms.ModelForm):
 class BatchForm(forms.ModelForm):
     class Meta:
         model = Batch
-        fields = ['batchName','reference']
+        fields = ['batchName']
 
 # This just gathers a Csv file before it is parsed.
 class CsvForm(forms.ModelForm):

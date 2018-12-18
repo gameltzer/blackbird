@@ -36,6 +36,7 @@ class Batch(models.Model):
     reference = models.ForeignKey(Reference, on_delete=models.CASCADE)
     #We want the batchName to be unique.
     batchName = models.CharField(primary_key=True, max_length=100, unique =True)
+    # batchName = models.CharField( max_length=100, unique =True)
     ## This allows us to record when the time is created. Normally, we don't want the users to input this. 
     timeCreated = models.DateTimeField(auto_now_add=True)
     objects= models.Manager()
@@ -51,7 +52,7 @@ class Sample(models.Model):
     #This is a char field because there is no reason why the submission name needs to be super long.
     #   The first argument to CharField is intended as a human readable name.
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
-    sampleFile = models.FileField(upload_to="sample", storage = OverwriteStorage()) 
+    sampleFile = models.FileField(upload_to="sample/", storage = OverwriteStorage()) 
     def __str__(self):
         return self.sampleFile.name
      #This is so VSC doesn't complain. 

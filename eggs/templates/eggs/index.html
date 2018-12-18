@@ -21,7 +21,7 @@
     </div>
 
     <div id="rawFASTA" >
-        <form method="GET" action="{% url 'uploadSelectFasta' %}">
+        <form method="GET" action="{% url 'uploadSingleBatch' %}">
             <input class="uploadInputOption" type="submit" value="Select individual FASTA and FASTQ files">
         </form>
     </div>
@@ -29,7 +29,7 @@
         <form method="GET" action="{% url 'uploadCsv' %}">
          <input class="uploadInputOption" type="submit" value="Select CSVid file">
     </div>
-  
+
 </br>
 
 <script src="{% static "eggs/chooseUpload.js" %}" ></script>

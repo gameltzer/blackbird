@@ -10,8 +10,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^uploadCsv',views.CsvView.as_view(), name = 'uploadCsv'),
-    url(r'^uploadSelectFasta$',views.uploadSelectFasta, name ='uploadSelectFasta'),
-    url(r'^uploadSelectFasta/uploadSample$',views.uploadSample, name ='uploadSample'),
+    url(r'uploadSingleBatch', views.UploadSingleBatch.as_view(), name="uploadSingleBatch"),
+    # url(r'^uploadSelectFasta$',views.uploadSelectFasta, name ='uploadSelectFasta'),
+    # url(r'^uploadSelectFasta/uploadSample$',views.uploadSample, name ='uploadSample'),
     url(r'^submit$',views.submit, name ='submit'),
     url(r'^submitCsv$', views.SubmitCsv.as_view(), name= 'submitCsv'),
     url(r'^graph$',views.graph, name='graph'),

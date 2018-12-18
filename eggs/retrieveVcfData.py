@@ -5,9 +5,12 @@ from django.db.models import F
 import os
 from django.core import serializers
 from django.conf import settings
+import logging
+from django.core.files import File
 
 db = settings.DATABASES["default"]
 
+logger = logging.getLogger("django.server")
 
 def storeVcf(vcfFileName):
     conn = psycopg2.connect("dbname="+ db['NAME'] + " "+ "user="+ db['USER'] + " "+ "password=" + db['PASSWORD'] + " " +
@@ -40,10 +43,12 @@ def storeVcf(vcfFileName):
 # It puts the ad and DP information into separate columns  
 def extractFromFormat(result):
     VCFWithoutResult = VCFRow.objects.filter(result__isnull=True)
+    logger.info(VCFWithoutResult)
     for row in VCFWithoutResult.iterator():
-      
+        # logger.info("row result: "+ str(row.result) + " ; input result: " + str(result))
         row.result = result
             # this gets the unfiltered DP ( we want unfiltered just like the AD)
+        logger.info("row result: "+ str(row.result.id) + " ; input result: " + str(result.id))
         info = row.info.split(";")
         for i in range(len( info)):
             infoList = info[i].split("=")
@@ -66,6 +71,7 @@ def extractFromFormat(result):
 
         row.infoRefAlleleReads = int(infoAD[0])
         row.infoAltAlleleReads = int(infoAD[1])
+        logger.info("row:" + str(row.infoRefAlleleReads))
         row.save()
 
 #this calculates how many variants
@@ -95,3 +101,21 @@ def refresh():
     Result.objects.all().delete()
     VCFRow.objects.all().delete()
     Csv.objects.all().delete()
+
+# this takes the fileFieldObject and saves it the media directory. This must be done since we are working directly with the model
+# rather than a form or modelform. The object returns is the new name of the fieldFile.... the model object must be updated to reflect.
+# Tnis is a function because we might want to use itin different classes and views.
+def saveFileField(fileFieldObject):
+    logger.info("fieldFile name: "+ fileFieldObject.name)
+    fullPath=fileFieldObject.name
+    f = open(fullPath)
+    myFile =File(f)
+    partStr = fullPath.rpartition("/")
+    field=fileFieldObject.field
+    fieldFileName = partStr[2]
+    relativeFilePath = field.upload_to + fieldFileName
+    # logger.info(fieldFileName)
+    # logger.info("Before fileFieldObject.save(): Batches {batch}\n\t and samples{sample}".format(batch=str(Batch.objects.all()), sample=str(Sample.objects.all()) ))
+    fileFieldObject.save(fieldFileName,myFile)
+    # fileFieldObject=relativeFilePath
+    return relativeFilePath

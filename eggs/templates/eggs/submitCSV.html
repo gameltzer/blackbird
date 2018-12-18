@@ -1,13 +1,31 @@
-{Currently unusued 
 
- <h1>Send csv files to  pipeline</h1>
-
-<div>
-   <form enctype="multipart/form-data" action="SubmitCSV" method="post">
+<style>
+pre {
+  display: block;
+  font-family:serif;
+  white-space: pre;
+  margin: 1em 0;
+} 
+</style>
+<h1>Send data to pipeline.</h1>
+<div class="csvFilename">
+    <p>The file is {{csvFile}}.</p>
+</div>
+<div class="csvContents">
+    <p>The contents are:</p>
+    <pre>{{fileContents}}</pre>
+    <form enctype="multipart/form-data" action="SubmitCSV" method="post">
         {% csrf_token %}
-        <input type="submit" value="Generate VCFfiles (this may take a while)!"  /><br><br>
+        <input type="submit" value="Process files with pipeline"/>
     </form>
 </div>
-<p>{{csvFile}}</p>
+
+<div class="submitFilesForProcessing">
+   <form enctype="multipart/form-data" action="SubmitCSV" method="post">
+        {% csrf_token %}
+        <input type="submit" value="Generate VCFfiles (this may take a while)!" style="display:none"  /><br><br>
+    </form>
+</div>
+
 
 <a href="{% url 'index' %}">Home</a> 
