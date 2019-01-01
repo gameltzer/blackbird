@@ -23,7 +23,7 @@ class Reference(models.Model):
 
 # for each Csv submission
 class Csv(models.Model):
-    csvFile = models.FileField(upload_to="CSV/",storage= OverwriteStorage(), null = True, verbose_name="Select a CSV File.")
+    csvFile = models.FileField(upload_to="CSV/",storage= OverwriteStorage(), null = True, verbose_name="Select a CSV File.", unique=True)
     timeCreated = models.DateTimeField(auto_now_add=True)
     objects = models.Manager()
 

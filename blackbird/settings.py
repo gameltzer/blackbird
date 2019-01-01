@@ -47,9 +47,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     #This is for the app I've created.
-    'eggs.apps.EggsConfig'
+    'eggs.apps.EggsConfig',
+    # 'celery.contrib.testing.tasks'
 ]
-
+# this is good for celery
+CELERY_TASK_ALWAYS_EAGER=True
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

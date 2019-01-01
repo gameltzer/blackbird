@@ -1,14 +1,14 @@
-from __future__ import absolute_import, unicode_literals
-import os
-from celery import Celery
+# from __future__ import absolute_import, unicode_literals
+# import os
+# from celery import Celery
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'blackbird.settings')
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'blackbird.settings')
 
-app = Celery('blackbird')
-app.config_from_object('django.conf:settings', namespace='CELERY')
+# app = Celery('blackbird', backend='rpc://')
+# app.config_from_object('django.conf:settings', namespace='CELERY')
 
-app.autodiscover_tasks()
+# app.autodiscover_tasks()
 
-@app.task(bind=True)
-def debug_task(self):
-    print('Request : {0!r}'.format(self.request))
+# @app.task(bind=True)
+# def debug_task(self):
+#     print('Request : {0!r}'.format(self.request))

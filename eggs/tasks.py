@@ -1,10 +1,12 @@
 from __future__ import absolute_import, unicode_literals
 from celery import shared_task
-import logging
-from .models import Csv, Reference,Batch, Sample
+from celery.utils.log import get_task_logger
+# import logging
+from .models import Reference,Batch, Sample, Csv
 from .retrieveVcfData import saveFileField
+
 # from .views import saveFileField
-logger = logging.getLogger("django.server")
+logger = get_task_logger(__name__)
 # # This is a function version of the saveFileField object used in the method.
 # def function_saveFileField( fileFieldObject):
 #     logger.info("fieldFile name: "+ fileFieldObject.name)
@@ -27,10 +29,26 @@ def add(x,y):
     return x + y
 
 @shared_task
+def testModel(csvId):
+    logger.info("csvid : {0}".format(csvId))
+    c = Csv.objects.get(pk=csvId)
+    logger.info("file of csv: {0}".format(str(c.csvFile)))
+
+
+
+
+@shared_task
 def celery_extractDataFromCsv( csvTup):
     logger.info("getDataFromCsv reached")
-    csvObj = Csv.objects.get(pk=csvTup[0])
-    cName = csvObj.csvFile
+    # try:
+    logger.info("tuple type {0}".format(str(type(csvTup))))
+    # except DoesNotExist:
+  
+    csvPk =csvTup[0]
+
+    logger.info("csvTup Contents: {csvId}".format(csvId=csvPk))
+    csvObj = Csv.objects.get(pk=csvPk)
+    # cName = csvObj.csvFile
     csvList = csvTup[1]
     refList = []
     batchList = []

@@ -1,5 +1,7 @@
 {% load static %}
-
+<head>
+    <script src="{% static "eggs/node_modules/jquery/dist/jquery.js"%}"> </script>
+</head>
 <style> 
     .loader {
         border: 16px solid #f3f3f3; /* Light grey */
@@ -24,8 +26,8 @@
 </style>
 
 <h1>Upload CSV File </h1>
-<form enctype="multipart/form-data" >
-    {% csrf_token %}
+<form enctype="multipart/form-data" method = "POST" action = "uploadCsv" >
+    {% csrf_token %} 
     {{form.as_p}}</br>
     <input id="uploadCSV" type="submit" value="Extract info from CSV"/>
 </form>
@@ -36,8 +38,9 @@
 </br>
 </br>
 <a href="{% url 'index' %}">Home</a>
+<p id="progress"></p>
 
-<script src="{% static "eggs/node_modules/jquery/dist/jquery.js"%}"> </script>
+
 <script src="{% static "eggs/ajaxcsrf.js" %}"> </script> 
 <script src="{% static "eggs/csvUploadLoader.js" %}"> </script>
 

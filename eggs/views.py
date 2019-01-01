@@ -1,29 +1,37 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
-from .forms import UploadReferenceForm, UploadSampleForm, BatchForm, CsvForm
-from django.forms import modelformset_factory
-from eggs.models import Sample, Reference, Batch,Result, Csv
-from subprocess import call, check_output,Popen
-import os 
-from eggs.retrieveVcfData import *
-from django.views import View
-import logging
-from django.core.files import File
-import threading
-from django.template.response import TemplateResponse
 import json
-from .tasks import celery_extractDataFromCsv, add
-from blackbird.celery import debug_task
+import logging
+import os
+# import threading
+import time
+from subprocess import Popen, call, check_output
+
+from django.core.files import File
+from django.forms import modelformset_factory
+from django.http import HttpResponse, HttpResponseRedirect
+from django.http.response import StreamingHttpResponse
+from django.shortcuts import redirect, render
+from django.template.response import TemplateResponse
+from django.views import View
+import threading
+from eggs.models import Batch, Csv, Reference, Result, Sample
+from eggs.retrieveVcfData import (calculateVariants, exportToJson,
+                                  extractFromFormat, refresh, saveFileField,
+                                  storeVcf)
+
+from .forms import BatchForm, CsvForm, UploadReferenceForm, UploadSampleForm
+
+# from .tasks import celery_extractDataFromCsv, add, testModel
+# from blackbird.celery import debug_task
+# from django.db import transaction
 #This is for the log. 
 
 logger = logging.getLogger("django.server")
 
 # Create your views here.
 
-from django.http import HttpResponse
 
 
 
@@ -319,11 +327,18 @@ class CsvView(View):
             csvList.append(lineDict)
         # for line in f:
         #     lineCols = line.split(",")
-        c = Csv.objects.get(csvFile=f.name)
+        thisFilename = f.name
+        if Csv.objects.filter(csvFile=thisFilename).exists():
+            c= Csv.objects.get(csvFile=thisFilename)
+        else: 
+            c = Csv(csvFile=thisFilename)
+            c.save()
        
-        # print (c.CsvFile)
+        logger.info("CSV information: csvID {csvID} ".format(csvID=c.pk, csvFile=c.csvFile))
 
         csvTup=(c.pk, csvList)
+        logger.info("Tup 1 type{0}:".format(str(type(csvTup[0]))))
+
         return csvTup
     
     # takes as an input a list represnting the contents of the Csv file and returns a 
@@ -341,15 +356,18 @@ class CsvView(View):
     def extractDataFromCsv(self, csvTup):
         logger.info("getDataFromCsv reached")
         csvObj = Csv.objects.get(pk=csvTup[0])
-        cName = csvObj.csvFile
+        # cName = csvObj.csvFile
         csvList = csvTup[1]
 
 
       
         refList = []
         batchList = []
-        
+        progressDot = ""
         for row in csvList:
+            progressDot +="." 
+            # yield progressDot
+            # yield "Procesing."
             thisReference = row['ReferenceFile']
           #  fileObj = open(thisReference, "r")
            # fileDict = {thisReference: fileObj}
@@ -386,27 +404,11 @@ class CsvView(View):
             s.sampleFile=newSampleFileName
             logger.info("NewSampleFilename:" + str(s.sampleFile))
             s.save()
+            
         # This sends a signal to the event object for stopping waiting.  
-        # self.doneExtracting.set()
+        self.doneExtracting.set()
 
-    def sendToPipeline(self, batchGroup):
-        for batch in batchGroup:
-            valueIter = batch.itervalues()
-            keyIter = batch.iterkeys()
-            valueList = valueIter.next()
-            reference =str(Reference.objects.get(pk=valueList[0]).referenceFile.name)
-            sample1 = str(valueList[1])
-            sample2 = str(valueList[2])
-            basename = str(keyIter.next())
-            # This changes the directory to the one with the shell script (in the "aviary" media directory)        
-            wd = os.getcwd()
-            if not wd.endswith("/aviary"):
-                os.chdir("aviary")  
-    #This is the pipeline we use! 
-            pipelineName="./nest.sh"
-            call([pipelineName, sample1, sample2, reference, basename])
-            logger.info("pipeline called")
-            os.chdir(wd)
+  
 
     #This returns a list with the Result objects.
     def createResults(self, batchGroup):
@@ -448,6 +450,28 @@ class CsvView(View):
         logger.info(form)
         return render(request, self.template_name, {"form": form} )
 
+#     def post(self,request):
+#         logger.info("post for Csv reached")
+#         form = self.form_class(request.POST, request.FILES)
+#         logger.info("contents of bound form: \n"+ str(request.POST))
+#         logger.info("files of bound form: \n" + str(request.FILES))
+#         logger.info("before validation" + str(form))
+#         # logger.info(request.body)
+       
+#         if form.is_valid():
+#             logger.info("form valid")
+#             logger.info(request.FILES)            
+#             form.save()
+#             csvFile = form.instance.csvFile
+#             thisCsv = Csv.objects.get(csvFile=csvFile)
+#             logger.info(thisCsv)
+# #Try saving the primary key instead.
+#             request.session["csvFile"]=thisCsv.id
+#         else:
+#             logger.info("form invalid")
+#             logger.info(form)
+#             raise Exception
+        
     def post(self,request):
         logger.info("post for Csv reached")
         form = self.form_class(request.POST, request.FILES)
@@ -460,28 +484,37 @@ class CsvView(View):
             logger.info("form valid")
             logger.info(request.FILES)            
             form.save()
-            csvFile = form.instance.csvFile
-            thisCSV = Csv.objects.get(csvFile=csvFile)
-            logger.info(thisCSV)
+            thisCsv = form.instance
+            csvFile = thisCsv.csvFile
+            # thisCsv = Csv.objects.get(csvFile=csvFile)
+            logger.info(thisCsv)
 #Try saving the primary key instead.
-            request.session["csvFile"]=thisCSV.id
+            request.session["csvFile"]=thisCsv.id
             csvTup = self.handleUploadedFile(csvFile)
             # self.extractDataFromCsv(csvTup)
-            celery_extractDataFromCsv.delay( csvTup)
-            debug_task.delay()
-            logger.info("Celery extraction reached")
-            # this is the thread. 
+            logger.info("csvTup  {0};".format(csvTup))
+            logger.info("csvRetrieved {0}".format(thisCsv.id))
+            # # testModel.delay(csvTup[0])
+            # # celery_extractDataFromCsv.delay(csvTup)
+            # # debug_task.delay()
+            # logger.info("Celery extraction reached")
+            # # this is the thread. 
             # thread = threading.Thread(target = self.extractDataFromCsv(csvTup))
-            # thread.daemon= True 
+            # # thread.daemon= True 
             # thread.start()
-            # self.extractDataFromCsv(csvTup)
-            # This causes it to wait
+            # # self.extractDataFromCsv(csvTup)
+            # # This causes it to wait
             # self.doneExtracting.wait()
-            # This will be encoded into JSON that will be sent to ajax so that ajax can send the window to another URL. AJAX doesn't understand the 
-            # HTTP redirects in Django. 
-            response = {'status': 1,'url':'submitCsv'}
-            return HttpResponse(json.dumps(response), content_type="application/json")
-            # return HttpResponse("Done.")
+            # # This will be encoded into JSON that will be sent to ajax so that ajax can send the window to another URL. AJAX doesn't understand the 
+            # # HTTP redirects in Django. 
+            # response = {'status': 1,'url':'submitCsv'}
+            #The redirect is handled in the javascript. 
+            
+            self.extractDataFromCsv(csvTup)
+            # return HttpRespons("Done")
+            # return StreamingHttpResponse(self.extractDataFromCsv(csvTup),content_type="text/html; charset=utf-8")
+            # return HttpResponse(json.dumps(response), content_type="application/json")
+            return HttpResponseRedirect("submitCsv")
         else:
             logger.info("form invalid")
             logger.info(form)
@@ -491,6 +524,31 @@ class CsvView(View):
 
 class SubmitCsv(View):
     template_name = 'eggs/submitCsv.html'
+    csvBatchDictList = []
+    def sendToPipeline(self, batchGroup):
+        for batch in batchGroup:
+            valueIter = batch.itervalues()
+            keyIter = batch.iterkeys()
+            valueList = valueIter.next()
+            logger.info("valueList 0 (refererence):{0}".format(valueList[0]))
+            # referenceName = Reference.objects.get(pk=valueList[0]).referenceFile.name
+            referenceName=valueList[0]
+            logger.info("Reference name{0}".format(referenceName))
+            # reference =str(Reference.objects.get(pk=valueList[0]).referenceFile.name)
+            reference =str(referenceName)
+
+            sample1 = str(valueList[1])
+            sample2 = str(valueList[2])
+            basename = str(keyIter.next())
+            # This changes the directory to the one with the shell script (in the "aviary" media directory)        
+            wd = os.getcwd()
+            if not wd.endswith("/aviary"):
+                os.chdir("aviary")  
+    #This is the pipeline we use! 
+            pipelineName="./nest.sh"
+            call([pipelineName, sample1, sample2, reference, basename])
+            logger.info("pipeline called")
+            os.chdir(wd)
     def get(self,request):
         csvID = request.session["csvFile"]
         logger.info(csvID)
@@ -498,22 +556,26 @@ class SubmitCsv(View):
         thisCSV= Csv.objects.get(pk=csvID)
 #This gets the associated batches that have been extracted from the CSV file.
         batches = thisCSV.batch_set.all()
-        csvBatchDictList = []
+        logger.info("\tThe batches for the class-based view 'SubmitCSV' are: \n {0}".format(str(batches.values())))
+        allBatches=Batch.objects.all().values()
+        logger.info("\n\t All the batches in the dataase are: \n {0}".format(str(allBatches)))
+        
         for batch in batches:
             logger.info("BatcH: {batch}".format(batch=str(batch)))
             samples = batch.sample_set.all()
+            logger.info("content Batch: {batch}".format(batch=str(batch)))
             # sampleList = []
             # for sample in samples:
             #     sampleList.append(sample)
             batchDict ={batch.batchName: [ batch.reference, samples[0], samples[1]] }
-            csvBatchDictList.append(batchDict)
+            self.csvBatchDictList.append(batchDict)
         # print(CsvBatchDictList)
         # self.sendToPipeline(CsvBatchDictList)
             # resList = self.createResults(CsvBatchDictList)
             # self.storeVCFsFromCsv(resList)
             # exportToJson(resList)
         csvContents = ""
-        for element in csvBatchDictList:
+        for element in self.csvBatchDictList:
             logger.info("Element: {element}".format(element=str(element)))
             elementItems=element.items()
             key, values= elementItems[0]
@@ -521,6 +583,7 @@ class SubmitCsv(View):
             reference = str(values[0])
             sample1 = str(values[1])
             sample2 = str(values[2])
+            logger.info("element")
             csvContents += "The batch {batchName} has as a reference file {reference}, \n   and as sample files {sample1} \n    and {sample2}. \n\n ".format(batchName=batchName,
             reference=reference,sample1=sample1,sample2=sample2)
         logger.info("CSV contents {csvContents}".format(csvContents=csvContents))
@@ -533,6 +596,12 @@ class SubmitCsv(View):
         logger.info("This was attempted with the template response.")
         return response
     def post(self,request):
+        postMessage = "POST \n"
+        postFile = open("postLog","a")
+        postFile.write(postMessage)
+        postFile.flush()
+        os.fsync(postFile)
+        self.sendToPipeline(self.csvBatchDictList)
     #this doesn't handle Csv files. 
     # also consider creating 
     #
@@ -545,22 +614,26 @@ class SubmitCsv(View):
     #         samples.append(sample)
     #     sample1 = samples[0]
     #     sample2 = samples[1]
-    #     context = {
-    #             "batch" : batch,
-    #             "reference" : reference,
-    #             "sample1" : sample1,
-    #             "sample2" : sample2,
-    #         }
-    #     if request.method =='POST':
-                #The batch we are working with. 
-        # This changes the directory to the one with the shell script (in the "aviary" media directory)        
-        wd = os.getcwd()
-        os.chdir("aviary")
-        #This is the pipeline we use! 
-        pipelineName="./nest.sh"
-        # call([pipelineName, sample1.sampleFile.name, sample2.sampleFile.name, reference.referenceFile.name, batch.batchName])
-        os.chdir(wd)
-        return HttpResponseRedirect('graphCsv')
+    #     # context = {
+    #     #         "batch" : batch,
+    #     #         "reference" : reference,
+    #     #         "sample1" : sample1,
+    #     #         "sample2" : sample2,
+    #     #     }
+    # #     if request.method =='POST':
+    #             #The batch we are working with. 
+    #     # This changes the directory to the one with the shell script (in the "aviary" media directory)        
+    #     wd = os.getcwd()
+    #     os.chdir("aviary")
+    #     #This is the pipeline we use! 
+    #     pipelineName="./nest.sh"
+    #     call([pipelineName, sample1.sampleFile.name, sample2.sampleFile.name, reference.referenceFile.name, batch.batchName])
+    #     os.chdir(wd)
+        # The redirect is handled in the javascript. 
+
+        response = {'status': 1,'url':'graphCsv'}
+        return HttpResponse(json.dumps(response), content_type="application/json")
+        # return HttpResponseRedirect('graphCsv')
 
 def graphCsv(request):
     return render(request, 'eggs/graphCsv.html')

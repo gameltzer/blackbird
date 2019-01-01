@@ -1,4 +1,7 @@
-
+{% load static %}
+<head>
+    <script src="{% static "eggs/node_modules/jquery/dist/jquery.js"%}"> </script>
+</head>
 <style>
 pre {
   display: block;
@@ -6,6 +9,27 @@ pre {
   white-space: pre;
   margin: 1em 0;
 } 
+
+.loader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    -webkit-animation: spin 2s linear infinite; /* Safari */
+    animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+0% { -webkit-transform: rotate(0deg); }
+100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 </style>
 <h1>Send data to pipeline.</h1>
 <div class="csvFilename">
@@ -14,18 +38,15 @@ pre {
 <div class="csvContents">
     <p>The contents are:</p>
     <pre>{{fileContents}}</pre>
-    <form enctype="multipart/form-data" action="SubmitCSV" method="post">
+    <form enctype="multipart/form-data" action="submitCsv" method="post">
         {% csrf_token %}
-        <input type="submit" value="Process files with pipeline"/>
+        <input id="processFiles" type="submit" value="Process files with pipeline"/>
     </form>
 </div>
+<div class="loader"></div>
 
-<div class="submitFilesForProcessing">
-   <form enctype="multipart/form-data" action="SubmitCSV" method="post">
-        {% csrf_token %}
-        <input type="submit" value="Generate VCFfiles (this may take a while)!" style="display:none"  /><br><br>
-    </form>
-</div>
 
+<script src="{% static "eggs/ajaxcsrf.js" %}"> </script> 
+<script src="{% static "eggs/csvSubmitLoader.js" %}"> </script>
 
 <a href="{% url 'index' %}">Home</a> 

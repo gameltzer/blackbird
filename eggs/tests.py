@@ -16,6 +16,8 @@ import logging
 import os
 # from selenium.webdriver.common.desired_capabilties import DesiredCapabilities
 from subprocess import call
+from celery.contrib.testing.worker import start_worker
+# from blackbird.celery import app
 
 
 
@@ -67,14 +69,18 @@ class notOnSubmit(object):
         else:
             print("notOnSubmit returned True")
             return True
-class NotOnUploadCsv(object):
+class NotOnSamePage(object):
+    # # This allows us to speciy the text on the page when we make a new object. 
+    def __init__(self, pageText):
+        self.pageText= pageText
+
     def __call__(self, driver):
         page_source = driver.page_source
         #CSV is all upercase here because this is what the user is seeing.
-        if "Upload CSV File" in page_source:
+        if self.pageText in page_source:
             return False
         else:
-            print("notOnUploadCSV returned True")
+            print("NotOnSamePage returned True")
             return True
 
 
@@ -95,14 +101,18 @@ class EggsTests(StaticLiveServerTestCase):
         # d = webdriver.DesiredCapabilities.CHROME
         # d['loggingPrefs'] = {'browser': 'ALL'}
         # cls.selenium = webdriver.chrome.webdriver.WebDriver(desired_capabilities=d)
-        cls.selenium = webdriver.chrome.webdriver.WebDriver()
-        # cls.selenium = webdriver.firefox.webdriver.WebDriver()
+        # cls.selenium = webdriver.chrome.webdriver.WebDriver(service_args=["--verbose","--log-path=/mnt/LinuxLanzaProject/chromium.log"])
+        # cls.selenium = webdriver.chrome.webdriver.WebDriver()
+        cls.selenium = webdriver.firefox.webdriver.WebDriver()
         cls.selenium.implicitly_wait(10)
         cls.selenium.get(cls.live_server_url)
+        # cls.celery_worker = start_worker(app)
+        # cls.celery_worker.__enter__()
 
     @classmethod
     def tearDownClass(cls):
         cls.selenium.quit()
+        # cls.celery_worker.__exit__()
         super(EggsTests, cls).tearDownClass()
 
     
@@ -235,6 +245,12 @@ class CsvSamplesTest(EggsTests):
         csvFile.clear()
         csvFile.send_keys(self.pathOfFilesToUpload + self.csvFilename)
         self.selenium.find_element_by_id("uploadCSV").click()
+        logger.info("according to the test the filename is {0}.".format(self.csvFilename))
+#This is the part of the test that handles the page for sending data to the pipeline. 
+    def sendBulkDataToPipeline(self):
+        assert "Send data to pipeline." in self.selenium.page_source
+        self.selenium.find_element_by_id("processFiles").click()
+
     def graphCsv(self):
         assert "Number of mutations." in self.selenium.page_source
         
@@ -248,20 +264,30 @@ class CsvSamplesTest(EggsTests):
         pass
 
     def test_Csv(self):
-        self.celery_worker()
-        self.pickCsv()
-        self.selectUploadOption()
-        self.uploadCsvFiles()
-        # wait = WebDriverWait(self.selenium, 24*7200)
-        # wait.until(NotOnUploadCsv())
+        # self.celery_worker()
+        try:
+            self.pickCsv()
+            self.selectUploadOption()
+            self.uploadCsvFiles()
+            wait = WebDriverWait(self.selenium, 24*7200)
+            wait.until(NotOnSamePage("Upload CSV File"))
+            self.sendBulkDataToPipeline()
+            wait = WebDriverWait(self.selenium, 24*7200)
+            wait.until(NotOnSamePage("Send data to pipeline."))
+            self.graphCsv()
+
+        except TimeoutException as ex:
+            logger.info("\t Timeout Exception {} \n".format(str(ex)))
+            logger.info(ex.stacktrace)
+       
         # self.graphCsv()
         # self.outputLog()
    
    
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #     pass
+    @classmethod
+    def tearDownClass(cls):
+        pass
 
 
 
