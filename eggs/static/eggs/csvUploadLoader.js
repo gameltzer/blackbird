@@ -1,20 +1,126 @@
-upload = document.getElementById("uploadCSV");
-upload.addEventListener("click", activateLoader);
-var csvFilePickerCollection = document.getElementsByName("csvFile");
-var csvFilePicker = csvFilePickerCollection[0];
+var uploadButton = document.getElementById("uploadCSV");
+uploadButton.addEventListener("click", activateLoader);
+var uploadFormDiv = document.getElementById("uploadForm");
 var classCollection = document.getElementsByClassName("loader");
 var loader = classCollection[0];
-
-var label = document.querySelector("label");
+var statusMessageDiv = document.getElementById("statusMessageDiv");
+var xhttp = new XMLHttpRequest();
 
 // This is for the form data. 
 var theForm = document.querySelector("form");
 
-function activateLoader(){
+// window.addEventListener("error", function(event){
+//     console.error("This is the listener that was added to the window.");
+//     console.error(event);
+//     console.trace("This is the trace.");
+// });
+
+function activateLoader(event){
+    event.preventDefault();
+    // event.stopPropagation();
+    var lastInterval = 0; 
+
+    if (!xhttp){
+        alert("giving up");
+        return false; 
+    }
+ 
     loader.style = "display:block";
-    upload.style = "display:none";
-    csvFilePicker.style = "display:none";
-    label.style = "display:none";
+    uploadFormDiv.style = "display:none";
+
+    // This is a textual reminder that we are uploading documents.
+    var para = document.createElement("p");
+    para.innerHTML = "Uploading data...";
+    statusMessageDiv.appendChild(para);
+
+    // Event listeners
+    xhttp.upload.addEventListener("abort", function(evt){
+        operationCancelled(evt);
+    });
+    xhttp.upload.addEventListener("error", function(evt){
+        operationErrorHandler(evt);
+    });
+    xhttp.upload.addEventListener("progress", function(evt){
+        operationProgressMonitor(evt);
+    });
+
+    // This should fire not just when the uploading is finished, but when everything is finished, which
+    // is why this is not on the upload attribute. 
+    xhttp.addEventListener("load",loadHandler);
+
+    // xhttp.onreadystatechange = handleStateChange;
+    
+    xhttp.open("POST", "uploadCsv", true);
+    xhttp.responseType = "json";
+    xhttp.setRequestHeader("X-CSRFToken", csrftoken);
+     
+    // The form data is passed in an argument; nte that it is a FormData object.
+    formData = new FormData(theForm); 
+    xhttp.send(formData);
+
+    // This prints messages to the console when the XMLHttpRequest object is cancelled.
+    function operationCancelled(evt){
+        console.log("Operation cancelled");
+        console.log(evt);
+    }
+
+    // This prints messages tothe console when an error occurs with the XMLHttpRequest.
+    function operationErrorHandler(evt){
+        console.error("Error!");
+        console.error(evt);
+        console.trace("This is the trace");
+    }
+
+    // This determines what happens when a progress notification event occurs. The percentage is output
+    // in multiples of 5. 
+    function operationProgressMonitor(evt){
+        console.log("progress notification was called");
+        var percentComplete;
+        if (evt.lengthComputable){
+            percentComplete = evt.loaded / evt.total;
+        } else {
+            percentComplete = -1;
+        }
+        percentComplete = percentComplete * 100;
+        fraction = percentComplete % 1;
+        percentComplete = percentComplete - fraction;
+        if (percentComplete % 5 === 0){
+            // This makes sure the value is only output once.
+            if (percentComplete > lastInterval) {
+                console.log("Progress:" + percentComplete + "%");
+                lastInterval = percentComplete; 
+            }
+        }
+    }
+
+    // This determines what happens when the XMLHttpRequest is successful
+    function loadHandler(){
+        loader.style="display:none";
+        console.log("Success");
+
+        //This navigates to the next page.
+        window.location.href = xhttp.response.url;
+    }
+
+    // This prints messages to the console about the current state of the 
+    // XMLHttprequest
+    function handleStateChange(){
+        var responseData;
+        responseData = xhttp.response; 
+
+        var statusLog  = xhttp.status;
+       
+        var responseHeader = xhttp.getAllResponseHeaders();
+        var logMessage = (`Log from upload page: 
+            Ready state: ${this.readyState}
+            Status: ${statusLog}
+            Response Content: ${responseData}
+            Response Header: ${responseHeader}`);
+        console.log(logMessage);
+    }
+
+    
+    
 }
 // This gets the file from the form. 
 // var file = theForm.files[0];

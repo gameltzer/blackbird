@@ -76,6 +76,7 @@ def extractFromFormat(result):
 
 #this calculates how many variants
 def calculateVariants(thisResult):
+    logger.info("Calculate Variants Step Reached")
     resultRows=VCFRow.objects.filter(result=thisResult)
     thisResult.significantVariantCount = resultRows.filter(infoAltAlleleReads__gt=F('infoDP') * .50).count()
     thisResult.totalCount = resultRows.all().count()
@@ -83,24 +84,25 @@ def calculateVariants(thisResult):
 
 # this saves all our results in a json file so that javascript can use it to make the graph
 def exportToJson(results):
+    logger.info("exportToJson step reached")
     JSONSerializer = serializers.get_serializer("json")
     json_serializer = JSONSerializer()
     with open("eggs/static/eggs/resultJson.json", "w") as out:
         json_serializer.serialize(results, stream=out)
 
-# def exportToJsonCsv(resultList):
+def exportToJsonCsv(resultList):
 #     pass
-    # JSONSerializer = serializers.get_serializer("json")
-    # json_serializer = JSONSerializer()
-    # with open("eggs/static/eggs/resultJson.json", "w") as out:
-    #     json_serializer.serialize(resultList, stream=out)
+    JSONSerializer = serializers.get_serializer("json")
+    json_serializer = JSONSerializer()
+    with open("eggs/static/eggs/resultJson.json", "w") as out:
+        json_serializer.serialize(resultList, stream=out)
     
 
-# this just empties the results and VCFRow and CSV objectstables so that we can continue developing
-def refresh():
-    Result.objects.all().delete()
-    VCFRow.objects.all().delete()
-    Csv.objects.all().delete()
+# # # this just empties the results and VCFRow and CSV objectstables so that we can continue developing
+# def refresh():
+#     Result.objects.all().delete()
+#     VCFRow.objects.all().delete()
+#     Csv.objects.all().delete()
 
 # this takes the fileFieldObject and saves it the media directory. This must be done since we are working directly with the model
 # rather than a form or modelform. The object returns is the new name of the fieldFile.... the model object must be updated to reflect.

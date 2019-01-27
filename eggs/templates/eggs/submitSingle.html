@@ -1,0 +1,68 @@
+{% load static %}
+<head>
+    <script src="{% static "eggs/node_modules/jquery/dist/jquery.js"%}"> </script>
+</head>
+
+<style> 
+    #loader {
+        border: 16px solid #f3f3f3; /* Light grey */
+        border-top: 16px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        animation: spin 2s linear infinite;
+    }
+
+        /* Safari */
+    @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    #failure {
+        background: #F00;
+        color: #FFF;
+        font-family: 'Helvetica', 'Arial', sans-serif;
+        font-size: 4em;
+        font-weight: bold;
+        text-align: center;
+        width: 120px;
+        height: 120px;
+        border-radius: 5px;
+
+    }
+</style>
+
+<h1 id="Files for processing">Select set of files for processing</h1>
+
+<div id="info_id">
+    {% comment %} <form action="submit" method="post">
+    {% csrf_token %} {% endcomment %}
+    <p>The reference file is {{reference}}. </p>
+    <p>The sample files are
+    {{sample1}} and {{sample2}}/</p>
+
+    <button type="button" id="submitBatch">Submit files for processing.</button>
+        
+
+    <br><br>
+    {% comment %} </form> {% endcomment %}
+</div>
+
+
+<div id="loader" style="display:none"></div>
+<div id="failure" style="display:none"><span>X</span></div>
+
+
+<a href="{% url 'index' %}">Home</a>
+
+<script src="{% static "eggs/ajaxcsrf.js" %}"> </script> 
+<script src="{% static "eggs/myLoaderSingle.js" %}" ></script> 
+
+
+

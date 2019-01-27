@@ -9,7 +9,7 @@ function myLoad(){
         alert("giving up");
         return false;
     }
-    submit.disabled = true;
+    submit.style.display = "none";
     xhttp.onreadystatechange = handle; 
     xhttp.open("POST", "uploadCSV", true);
     xhttp.setRequestHeader("X-CSRFToken", csrftoken);

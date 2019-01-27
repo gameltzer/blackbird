@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from eggs.models import Batch, Reference, Sample
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support import expected_conditions as EC
 import traceback
 import sys
 import logging
@@ -69,19 +70,19 @@ class notOnSubmit(object):
         else:
             print("notOnSubmit returned True")
             return True
-class NotOnSamePage(object):
-    # # This allows us to speciy the text on the page when we make a new object. 
-    def __init__(self, pageText):
-        self.pageText= pageText
+# class NotOnSamePage(object):
+#     # # This allows us to speciy the text on the page when we make a new object. 
+#     def __init__(self, pageText):
+#         self.pageText= pageText
 
-    def __call__(self, driver):
-        page_source = driver.page_source
-        #CSV is all upercase here because this is what the user is seeing.
-        if self.pageText in page_source:
-            return False
-        else:
-            print("NotOnSamePage returned True")
-            return True
+#     def __call__(self, driver):
+#         page_source = driver.page_source
+#         #CSV is all upercase here because this is what the user is seeing.
+#         if self.pageText in page_source:
+#             return False
+#         else:
+#             print("NotOnSamePage returned True")
+#             return True
 
 
 class EggsTests(StaticLiveServerTestCase):
@@ -102,9 +103,10 @@ class EggsTests(StaticLiveServerTestCase):
         # d['loggingPrefs'] = {'browser': 'ALL'}
         # cls.selenium = webdriver.chrome.webdriver.WebDriver(desired_capabilities=d)
         # cls.selenium = webdriver.chrome.webdriver.WebDriver(service_args=["--verbose","--log-path=/mnt/LinuxLanzaProject/chromium.log"])
-        # cls.selenium = webdriver.chrome.webdriver.WebDriver()
-        cls.selenium = webdriver.firefox.webdriver.WebDriver()
-        cls.selenium.implicitly_wait(10)
+        cls.selenium = webdriver.chrome.webdriver.WebDriver()
+        # cls.selenium = webdriver.firefox.webdriver.WebDriver()
+        cls.selenium.implicitly_wait(30)
+        cls.selenium.set_page_load_timeout(216000)
         cls.selenium.get(cls.live_server_url)
         # cls.celery_worker = start_worker(app)
         # cls.celery_worker.__enter__()
@@ -184,6 +186,7 @@ class SingleSampleTest(EggsTests):
 
     # this submits the references and the samples
     def submitBatch(self):
+        
         assert "Select set of files for processing" in self.selenium.page_source
         self.selenium.find_element_by_id("submitBatch").click()
     
@@ -208,31 +211,36 @@ class SingleSampleTest(EggsTests):
     def test_Tester(self):
         self.pickSingleSampleSet()
      
-    def test_Workflow(self):
-        self.pickSingleSampleSet()
-        self.selectUploadOption()
-        self.uploadReference()
-        self.labelBatch()
-        self.uploadSampleFiles()
-        self.submitBatch()
-        wait = WebDriverWait(self.selenium, 24*7200)
-        wait.until(notOnSubmit())
-        # self.tabulateBatch()
-        self.graphBatch()
+    # def test_Workflow(self):
+    #     self.pickSingleSampleSet()
+    #     self.selectUploadOption()
+    #     self.uploadReference()
+    #     self.labelBatch()
+    #     self.uploadSampleFiles()
+    #     self.submitBatch()
+    #     wait = WebDriverWait(self.selenium, 24*7200)
+    #     wait.until(notOnSubmit())
+    #     # self.tabulateBatch()
+    #     self.graphBatch()
 
     def test_ImproveEfficency(self):
         self.pickSingleSampleSet()
         self.selectUploadOption()
         self.uploadSingleBatch()
-        self.submitBatch()
         wait = WebDriverWait(self.selenium, 24*7200)
-        wait.until(notOnSubmit())
+        wait.until(EC.presence_of_element_located((By.ID, "Files for processing")))
+                # wait.until(NotOnSamePage("Upload Batch Files"))
+
+        self.submitBatch()
+        # wait = WebDriverWait(self.selenium, 24*7200)
+        # wait.until(NotOnSamePage("Select set of files for processing"))
+        wait.until(EC.presence_of_element_located((By.ID, "graphSingle")))
         # self.tabulateBatch()
         self.graphBatch()
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #     pass
+    @classmethod
+    def tearDownClass(cls):
+        pass
     
 class CsvSamplesTest(EggsTests):
     def pickCsv(self):
@@ -257,28 +265,24 @@ class CsvSamplesTest(EggsTests):
     def outputLog(self):
         for entry in self.selenium.get_log('browser'):
             logger.info(entry)
-    # This calls the celry worker
-    def celery_worker(self):
-        # celery -A proj worker -l info
-        # call(["celery", "multi", "start", "w1", "-A", "blackbird", "-l", "info"])
-        pass
+
 
     def test_Csv(self):
         # self.celery_worker()
-        try:
-            self.pickCsv()
-            self.selectUploadOption()
-            self.uploadCsvFiles()
-            wait = WebDriverWait(self.selenium, 24*7200)
-            wait.until(NotOnSamePage("Upload CSV File"))
-            self.sendBulkDataToPipeline()
-            wait = WebDriverWait(self.selenium, 24*7200)
-            wait.until(NotOnSamePage("Send data to pipeline."))
-            self.graphCsv()
+    
+        self.pickCsv()
+        self.selectUploadOption()
+        self.uploadCsvFiles()
+        wait = WebDriverWait(self.selenium, 24*7200)
+        wait.until(EC.presence_of_element_located((By.ID, "sendDataToPipeline_id" )))
+        self.sendBulkDataToPipeline()
+        wait = WebDriverWait(self.selenium, 24*7200)
+        wait.until(EC.presence_of_element_located((By.ID, "csvGraph_id")))
+        self.graphCsv()
 
-        except TimeoutException as ex:
-            logger.info("\t Timeout Exception {} \n".format(str(ex)))
-            logger.info(ex.stacktrace)
+        # except TimeoutException as ex:
+        #     logger.info("\t Timeout Exception {} \n".format(str(ex)))
+        #     logger.info(ex.stacktrace)
        
         # self.graphCsv()
         # self.outputLog()

@@ -26,19 +26,23 @@
 </style>
 
 <h1>Upload CSV File </h1>
-<form enctype="multipart/form-data" method = "POST" action = "uploadCsv" >
-    {% csrf_token %} 
-    {{form.as_p}}</br>
-    <input id="uploadCSV" type="submit" value="Extract info from CSV"/>
-</form>
+<div id="uploadForm">
+    <form enctype="multipart/form-data" method = "POST" action = "uploadCsv" >
+        {% csrf_token %} 
+        {{form.as_p}}</br>
+        <input id="uploadCSV" type="submit" value="Extract info from CSV"/>
+    </form>
+</div>
 </br>
+<div id="statusMessageDiv">
+</div>
 
 
  <div class="loader" style="display:none"></div>
 </br>
 </br>
 <a href="{% url 'index' %}">Home</a>
-<p id="progress"></p>
+
 
 
 <script src="{% static "eggs/ajaxcsrf.js" %}"> </script> 

@@ -3,47 +3,66 @@
     <script src="{% static "eggs/node_modules/jquery/dist/jquery.js"%}"> </script>
 </head>
 <style>
-pre {
-  display: block;
-  font-family:serif;
-  white-space: pre;
-  margin: 1em 0;
-} 
+    pre {
+    display: block;
+    font-family:serif;
+    white-space: pre;
+    margin: 1em 0;
+    } 
 
-.loader {
-    border: 16px solid #f3f3f3; /* Light grey */
-    border-top: 16px solid #3498db; /* Blue */
-    border-radius: 50%;
-    width: 120px;
-    height: 120px;
-    -webkit-animation: spin 2s linear infinite; /* Safari */
-    animation: spin 2s linear infinite;
-}
+    #loader {
+        border: 16px solid #f3f3f3; /* Light grey */
+        border-top: 16px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 120px;
+        height: 120px;
+        -webkit-animation: spin 2s linear infinite; /* Safari */
+        animation: spin 2s linear infinite;
+    }
 
-/* Safari */
-@-webkit-keyframes spin {
-0% { -webkit-transform: rotate(0deg); }
-100% { -webkit-transform: rotate(360deg); }
-}
+    /* Safari */
+    @-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+    }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    #failure {
+        background: #F00;
+        color: #FFF;
+        font-family: 'Helvetica', 'Arial', sans-serif;
+        font-size: 120px;
+        font-weight: bold;
+        text-align: center;
+        width: 120px;
+        height: 129px;
+        border-radius: 5px;
+    }
+
+
 </style>
-<h1>Send data to pipeline.</h1>
+<h1 id="sendDataToPipeline_id">Send data to pipeline.</h1>
 <div class="csvFilename">
     <p>The file is {{csvFile}}.</p>
 </div>
 <div class="csvContents">
     <p>The contents are:</p>
     <pre>{{fileContents}}</pre>
-    <form enctype="multipart/form-data" action="submitCsv" method="post">
-        {% csrf_token %}
-        <input id="processFiles" type="submit" value="Process files with pipeline"/>
-    </form>
+    {% comment %} <form action="submitCsv" method="post"> {% endcomment %}
+        {% comment %} {% csrf_token %} {% endcomment %}
+        <button id="processFiles" type="button">Process files with pipeline </button>
+
+        {% comment %} <input id="processFiles" type="submit" value="Process files with pipeline"/> {% endcomment %}
+    {% comment %} </form> {% endcomment %}
 </div>
-<div class="loader"></div>
+<div id="loader"  style="display:none"></div>
+<div id="failure" style="display:none">
+    <span>X</span>
+</div>
 
 
 <script src="{% static "eggs/ajaxcsrf.js" %}"> </script> 

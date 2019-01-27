@@ -2,7 +2,7 @@ from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 import os
 
-#This prevents overwriting. With help from https://stackoverflow.com/questions/9522759/imagefield-overwrite-image-file-with-same-name
+#This allows for overwriting. With help from https://stackoverflow.com/questions/9522759/imagefield-overwrite-image-file-with-same-name
 
 class OverwriteStorage(FileSystemStorage):
 
