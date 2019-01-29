@@ -317,7 +317,7 @@ def graph(request):
 # it is much more complicated. 
 class CsvView(View):
     form_class = CsvForm
-    template_name = 'eggs/uploadCsv.html'
+    template_name = 'eggs/uploadCsvRevised.html'
     # This is so we know when we are done extracting to signla to the thread. 
 
     # def success(self, request, template, filename):
