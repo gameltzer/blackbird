@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# This installs additional linux software packages necessary for our application.
+
 cd /opt/python/current/app
 cd bcftools-1.9
 sudo ./configure /usr/local
