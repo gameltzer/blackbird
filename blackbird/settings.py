@@ -26,7 +26,7 @@ SECRET_KEY = '4-rcjw!ex+vkh2t#etm1y!vbza)&!p*9b8p43wnzg(sn8s-965'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['bluecrow2-env.us-east-2.elasticbeanstalk.com', 'localhost']
+ALLOWED_HOSTS = ['bluecrow2-env.us-east-2.elasticbeanstalk.com', 'localhost', '13.59.217.152']
 
 # More security settings
 
