@@ -50,7 +50,7 @@ function myLoad(event){
     function failure(){
         failureIcon = document.getElementById("failure");
         failureIcon.style="display:block";
-        loader.style="display:hide";
+        loader.style="display:none";
     }
 
     function handle() {
