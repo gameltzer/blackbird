@@ -223,7 +223,7 @@ class SingleSampleTest(EggsTests):
     #     # self.tabulateBatch()
     #     self.graphBatch()
 
-    def test_ImproveEfficency(self):
+    def test_ImproveEfficiency(self):
         self.pickSingleSampleSet()
         self.selectUploadOption()
         self.uploadSingleBatch()

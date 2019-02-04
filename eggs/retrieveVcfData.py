@@ -44,11 +44,12 @@ def storeVcf(vcfFileName):
 def extractFromFormat(result):
     VCFWithoutResult = VCFRow.objects.filter(result__isnull=True)
     logger.info(VCFWithoutResult)
+    logger.info("The information is being extracted from the VCF file.")
     for row in VCFWithoutResult.iterator():
         # logger.info("row result: "+ str(row.result) + " ; input result: " + str(result))
         row.result = result
             # this gets the unfiltered DP ( we want unfiltered just like the AD)
-        logger.info("row result: "+ str(row.result.id) + " ; input result: " + str(result.id))
+        # logger.info("row result: "+ str(row.result.id) + " ; input result: " + str(result.id))
         info = row.info.split(";")
         for i in range(len( info)):
             infoList = info[i].split("=")
@@ -71,7 +72,7 @@ def extractFromFormat(result):
 
         row.infoRefAlleleReads = int(infoAD[0])
         row.infoAltAlleleReads = int(infoAD[1])
-        logger.info("row:" + str(row.infoRefAlleleReads))
+        # logger.info("row:" + str(row.infoRefAlleleReads))
         row.save()
 
 #this calculates how many variants

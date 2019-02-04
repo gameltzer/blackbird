@@ -10,8 +10,8 @@ reference=$3
 #this is what the new output files are built using. (ecept for with bowtie2-build)
 filebase=$4
 #This is creating the index.
-bowtie2-build $reference $reference
-
+bowtie2-build --offrate 7 $reference $reference
+echo "build is done"
 
 #This uses filebase for the SAM file output by bowtie2. 
 samName=$filebase.sam
