@@ -1,1 +1,1 @@
-[{"model": "eggs.result", "pk": 81, "fields": {"batch": "salmonellaLocalRunserver", "timeCreated": "2019-02-02T05:07:31.143Z", "significantVariantCount": 62913, "totalCount": 63514}}]
+[{"model": "eggs.result", "pk": 1, "fields": {"batch": "example", "timeCreated": "2019-02-04T00:54:02.866Z", "significantVariantCount": 62911, "totalCount": 63513}}]
