@@ -18,7 +18,7 @@ samName=$filebase.sam
 
 #This requires that 1 and 2 must be properly associated with the correct 1 and 2 options.
 
-bowtie2 -a --seed 3 -x $reference -1 $sample1 -2 $sample2 -S $samName
+bowtie2 --no-mixed --seed 3 -x $reference -1 $sample1 -2 $sample2 -S $samName
 
 # This stores the bam name
 bamName=$fileBase.bam
