@@ -16,7 +16,7 @@ echo "build is done"
 #This uses filebase for the SAM file output by bowtie2. 
 samName=$filebase.sam
 
-metFile=metrics$samName
+metFile=metrics$filebase
 #This requires that 1 and 2 must be properly associated with the correct 1 and 2 options.
 
 bowtie2 --no-mixed  --seed 3 -x $reference -1 $sample1 -2 $sample2 -S $samName --met-file $metFile 
