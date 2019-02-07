@@ -19,7 +19,7 @@ samName=$filebase.sam
 metFile=metrics$samName
 #This requires that 1 and 2 must be properly associated with the correct 1 and 2 options.
 
-bowtie2 --no-mixed --fr -X 250 --seed 3 -x $reference -1 $sample1 -2 $sample2 -S $samName --met-file $metFile 
+bowtie2 --no-mixed  --seed 3 -x $reference -1 $sample1 -2 $sample2 -S $samName --met-file $metFile 
 
 # This stores the bam name
 bamName=$fileBase.bam
